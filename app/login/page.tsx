@@ -1,10 +1,26 @@
+import { AuthForm } from "@/app/login/auth-form";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 const featureItems = [
   "不健康行動と健康行動を記録",
   "ポイントの増減で見える化",
   "今日はここから立て直そう、を支える設計",
 ];
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams?: Promise<{
+    next?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const nextPath = resolvedSearchParams?.next || "/profile/setup";
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -40,58 +56,16 @@ export default function LoginPage() {
               まずはアカウントを作成しましょう
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Step 1 では画面の土台のみ実装しています。次のステップで
-              Supabase Auth と接続し、登録・ログインを動かします。
+              メールアドレスで登録・ログインできます。ログイン後は、
+              初回プロフィール設定画面へ進みます。
             </p>
 
-            <form className="mt-8 space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  メールアドレス
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
-                  disabled
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  パスワード
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  placeholder="8文字以上"
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
-                  disabled
-                />
-              </div>
-
-              <button
-                type="button"
-                className="w-full rounded-2xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled
-              >
-                Step 2 で有効になります
-              </button>
-            </form>
+            <AuthForm nextPath={nextPath} />
 
             <div className="mt-6 rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-6 text-slate-500">
-              Supabase URL / Anon Key は
-              <code className="mx-1 rounded bg-white px-1 py-0.5">
-                .env.local
-              </code>
-              で管理します。
+              {user
+                ? "ログイン済みです。必要なら別タブでプロフィール設定画面を開いてください。"
+                : "Supabase URL / Anon Key は .env.local で管理します。"}
             </div>
           </div>
         </section>
@@ -99,4 +73,3 @@ export default function LoginPage() {
     </main>
   );
 }
-

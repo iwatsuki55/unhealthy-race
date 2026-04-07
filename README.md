@@ -12,6 +12,13 @@ Step 1 を実装済みです。
 - ログイン画面の土台作成
 - `.env.example` の追加
 
+Step 2 を実装済みです。
+
+- Supabase Auth を使ったメール登録 / ログイン
+- 認証済みユーザーの画面遷移
+- `/profile/setup` の保護
+- ログアウト処理
+
 ## 前提環境
 
 - Node.js 20 以上
@@ -41,17 +48,26 @@ npm run dev
 
 6. ブラウザで [http://localhost:3000](http://localhost:3000) を開きます。
 
+## Supabase Auth の事前設定
+
+1. Supabase プロジェクトを作成します。
+2. `Authentication` で Email プロバイダーを有効にします。
+3. ローカルで登録後すぐに遷移確認したい場合は、メール確認を一時的にオフにします。
+4. `.env.local` に `Project URL` と `anon public key` を設定します。
+
 ## ディレクトリ構成
 
 ```text
 app/
   login/
+  profile/setup/
   globals.css
   layout.tsx
   page.tsx
 lib/
   supabase/
   env.ts
+middleware.ts
 ```
 
 ## 環境変数
@@ -63,6 +79,5 @@ lib/
 
 ## 今後の実装予定
 
-- Step 2: Supabase Auth による登録・ログイン
 - Step 3: プロフィール設定と SQL 追加
 - Step 4 以降: 行動登録、ポイント計算、履歴、週次推移
