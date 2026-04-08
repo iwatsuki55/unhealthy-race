@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
-import { ProfileForm } from "@/app/profile/setup/profile-form";
 import { LogoutButton } from "@/app/profile/setup/logout-button";
 import { getProfileByUserId } from "@/lib/profile-server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export default async function ProfileSetupPage() {
+export default async function HomePlaceholderPage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -16,8 +15,8 @@ export default async function ProfileSetupPage() {
 
   const profile = await getProfileByUserId(user.id).catch(() => null);
 
-  if (profile?.nickname) {
-    redirect("/home");
+  if (!profile?.nickname) {
+    redirect("/profile/setup");
   }
 
   return (
@@ -25,43 +24,39 @@ export default async function ProfileSetupPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <header className="flex items-start justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
           <div>
-            <p className="text-sm font-semibold text-primary-700">
-              認証に成功しました
-            </p>
+            <p className="text-sm font-semibold text-primary-700">プロフィール保存完了</p>
             <h1 className="mt-2 text-2xl font-bold text-slate-900">
-              初回プロフィールを設定しましょう
+              {profile.nickname} さん、準備が整いました
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              ニックネームは必須です。年代と性別はあとからでも調整できるよう、
-              任意入力にしています。
+              Step 3 では初回プロフィール設定までを実装しています。Step 6 でこの仮ホームを
+              ダッシュボード本体に置き換えます。
             </p>
           </div>
           <LogoutButton />
         </header>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-          <dl className="space-y-4 border-b border-slate-100 pb-6">
+          <dl className="space-y-4">
             <div>
-              <dt className="text-sm font-medium text-slate-500">
-                ログイン中のメールアドレス
-              </dt>
+              <dt className="text-sm font-medium text-slate-500">ニックネーム</dt>
               <dd className="mt-1 text-base font-semibold text-slate-900">
-                {user.email}
+                {profile.nickname}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-slate-500">
-                保存後の遷移先
-              </dt>
-              <dd className="mt-1 text-sm leading-6 text-slate-700">
-                いったん仮のホーム画面へ移動します。Step 6 で本実装に置き換えます。
+              <dt className="text-sm font-medium text-slate-500">年代</dt>
+              <dd className="mt-1 text-sm text-slate-700">
+                {profile.age_group || "未設定"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-slate-500">性別</dt>
+              <dd className="mt-1 text-sm text-slate-700">
+                {profile.gender || "未設定"}
               </dd>
             </div>
           </dl>
-
-          <div className="pt-6">
-            <ProfileForm />
-          </div>
         </section>
       </div>
     </main>

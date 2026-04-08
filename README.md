@@ -19,6 +19,13 @@ Step 2 を実装済みです。
 - `/profile/setup` の保護
 - ログアウト処理
 
+Step 3 を実装済みです。
+
+- `profiles` / `actions` / `action_logs` の SQL 追加
+- `actions` の seed データ追加
+- 初回プロフィール設定フォーム追加
+- プロフィール保存後の仮ホーム画面追加
+
 ## 前提環境
 
 - Node.js 20 以上
@@ -55,18 +62,33 @@ npm run dev
 3. ローカルで登録後すぐに遷移確認したい場合は、メール確認を一時的にオフにします。
 4. `.env.local` に `Project URL` と `anon public key` を設定します。
 
+## Step 3 の SQL 適用
+
+Supabase ダッシュボードの `SQL Editor` で、次の順に実行してください。
+
+1. [supabase/migrations/202604081000_step3_init.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604081000_step3_init.sql)
+2. [supabase/seed.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/seed.sql)
+
+これにより、プロフィール保存と今後の行動マスタ取得に必要なテーブルが作成されます。
+
 ## ディレクトリ構成
 
 ```text
 app/
+  home/
   login/
   profile/setup/
   globals.css
   layout.tsx
   page.tsx
 lib/
+  profile-options.ts
+  profile-server.ts
   supabase/
   env.ts
+supabase/
+  migrations/
+  seed.sql
 middleware.ts
 ```
 
@@ -79,5 +101,6 @@ middleware.ts
 
 ## 今後の実装予定
 
-- Step 3: プロフィール設定と SQL 追加
-- Step 4 以降: 行動登録、ポイント計算、履歴、週次推移
+- Step 4: 行動登録画面と保存処理
+- Step 5: ポイント計算ロジックと制限ルール
+- Step 6 以降: ホーム、履歴、週次推移
