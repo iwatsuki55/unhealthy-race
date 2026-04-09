@@ -26,6 +26,38 @@ Step 3 を実装済みです。
 - 初回プロフィール設定フォーム追加
 - プロフィール保存後の仮ホーム画面追加
 
+Step 4 を実装済みです。
+
+- `actions` テーブルから行動一覧を取得
+- 行動登録画面を追加
+- メモ付きで `action_logs` に保存
+- ホームから行動登録画面への導線を追加
+
+Step 5 を実装済みです。
+
+- 同じ行動の1日3回制限を追加
+- 健康行動の1日減算上限 -30 を追加
+- ポイント下限 0 の制御を追加
+- 保存済みログから現在ポイントを再計算して表示
+
+Step 6 を実装済みです。
+
+- ホーム画面で現在ポイントを表示
+- 今日の増減ポイントを表示
+- 直近5件の登録行動を表示
+- ルールベースのコメント表示を追加
+
+Step 7 を実装済みです。
+
+- 履歴一覧画面を追加
+- 日付、行動名、健康/不健康区分、増減ポイント、メモを表示
+- ホームから履歴一覧への導線を追加
+
+Step 8 を実装済みです。
+
+- ホーム画面に今週の推移を追加
+- 日ごとの増減ポイントを簡易棒グラフで表示
+
 ## 前提環境
 
 - Node.js 20 以上
@@ -75,13 +107,19 @@ Supabase ダッシュボードの `SQL Editor` で、次の順に実行してく
 
 ```text
 app/
+  actions/new/
   home/
+  history/
   login/
   profile/setup/
   globals.css
   layout.tsx
   page.tsx
 lib/
+  action-server.ts
+  history-server.ts
+  home-server.ts
+  point-rules.ts
   profile-options.ts
   profile-server.ts
   supabase/
@@ -101,6 +139,4 @@ middleware.ts
 
 ## 今後の実装予定
 
-- Step 4: 行動登録画面と保存処理
-- Step 5: ポイント計算ロジックと制限ルール
-- Step 6 以降: ホーム、履歴、週次推移
+- MVP 実装はひと通り完了

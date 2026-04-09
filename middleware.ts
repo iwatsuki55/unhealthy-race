@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const protectedPaths = ["/profile/setup", "/home"];
+const protectedPaths = ["/profile/setup", "/home", "/actions/new", "/history"];
 const authPaths = ["/login"];
 
 export async function middleware(request: NextRequest) {
@@ -34,6 +34,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/profile/setup/:path*", "/home/:path*"],
+  matcher: ["/login", "/profile/setup/:path*", "/home/:path*", "/actions/new/:path*", "/history/:path*"],
 };
-
