@@ -2,6 +2,10 @@
 
 Next.js + Tailwind CSS + Supabase で作る、生活習慣の乱れを見える化し、健康行動で少しずつ整え直していくための Web アプリです。
 
+## 本番URL
+
+[https://unhealthy-race.vercel.app](https://unhealthy-race.vercel.app)
+
 ## 現在の進捗
 
 Step 1 を実装済みです。
