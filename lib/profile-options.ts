@@ -12,7 +12,11 @@ export const genderOptions = [
   { value: "no_answer", label: "回答しない" },
 ] as const;
 
+export const commentToneOptions = [
+  { value: "gentle", label: "やさしめ" },
+  { value: "sarcastic", label: "皮肉多め" },
+] as const;
+
 export type ProfileFormState = {
   error: string | null;
 };
-

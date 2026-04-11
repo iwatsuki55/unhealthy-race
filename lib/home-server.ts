@@ -40,15 +40,76 @@ function buildHomeComment({
   todayDelta,
   yesterdayDelta,
   weekLogs,
+  hasRival,
+  hasFriend,
+  commentTone,
 }: {
   todayDelta: number;
   yesterdayDelta: number;
+  hasRival: boolean;
+  hasFriend: boolean;
+  commentTone: "gentle" | "sarcastic";
   weekLogs: Array<
     ActionLogWithAction & {
       action: { name: string; type: "healthy" | "unhealthy"; category: string } | null;
     }
   >;
 }) {
+  if (commentTone === "sarcastic" || hasRival) {
+    const morningDrinkingCount = weekLogs.filter(
+      (log) => log.action?.name === "午前中から飲んだ",
+    ).length;
+    if (morningDrinkingCount >= 1) {
+      return "午前から飛ばしていて、レースへの本気度が伝わります";
+    }
+
+    const lateNightCount = weekLogs.filter((log) => log.action?.name === "夜更かし").length;
+    if (lateNightCount >= 2) {
+      return "夜更かしの積み上がり、かなり順調です";
+    }
+
+    const drinkingPoints = weekLogs
+      .filter((log) => log.action?.category === "drinking" && log.point_value > 0)
+      .reduce((sum, log) => sum + log.point_value, 0);
+    if (drinkingPoints >= 15) {
+      return "飲酒ポイントの伸びが頼もしいですね";
+    }
+
+    const noWalkingCount = weekLogs.filter(
+      (log) => log.action?.name === "歩かなかった",
+    ).length;
+    if (noWalkingCount >= 2) {
+      return "歩数を捨てる覚悟、なかなか筋が通っています";
+    }
+
+    if (todayDelta < yesterdayDelta) {
+      return "昨日よりは少し冷静でした";
+    }
+
+    if (todayDelta <= 0) {
+      return "今日はちゃんと立て直していて拍子抜けです";
+    }
+
+    if (todayDelta >= 15) {
+      return "今日はしっかりポイントを稼いでいて抜け目がありません";
+    }
+
+    return "今日もいい感じにポイントを育てています";
+  }
+
+  if (hasFriend) {
+    const healthyCount = weekLogs.filter((log) => log.point_value < 0).length;
+    if (healthyCount >= 2) {
+      return "友達と並走しながら、ちゃんと戻せていていい流れです";
+    }
+
+    if (todayDelta > 0) {
+      return "友達に見られていても、自分らしい積み上がりです";
+    }
+
+    return "友達とゆるく走りながら整えています";
+  }
+
   const lateNightCount = weekLogs.filter((log) => log.action?.name === "夜更かし").length;
   if (lateNightCount >= 2) {
     return "今週は夜更かしが多めです";
@@ -72,7 +133,20 @@ function buildHomeComment({
   return "今日はここから立て直そう";
 }
 
-export const getHomeSummary = cache(async (userId: string) => {
+export const getHomeSummary = cache(
+  async ({
+    userId,
+    raceId,
+    hasRival,
+    hasFriend,
+    commentTone,
+  }: {
+    userId: string;
+    raceId: string;
+    hasRival: boolean;
+    hasFriend: boolean;
+    commentTone: "gentle" | "sarcastic";
+  }) => {
   const supabase = await createSupabaseServerClient();
   const now = new Date();
   const todayStart = startOfDay(now);
@@ -90,29 +164,37 @@ export const getHomeSummary = cache(async (userId: string) => {
     { data: recentLogs, error: recentLogsError },
     { data: weekLogs, error: weekLogsError },
   ] = await Promise.all([
-    supabase.from("action_logs").select("point_value").eq("user_id", userId),
     supabase
       .from("action_logs")
       .select("point_value")
       .eq("user_id", userId)
+      .eq("race_id", raceId),
+    supabase
+      .from("action_logs")
+      .select("point_value")
+      .eq("user_id", userId)
+      .eq("race_id", raceId)
       .gte("action_at", todayStart.toISOString())
       .lt("action_at", tomorrowStart.toISOString()),
     supabase
       .from("action_logs")
       .select("point_value")
       .eq("user_id", userId)
+      .eq("race_id", raceId)
       .gte("action_at", yesterdayStart.toISOString())
       .lt("action_at", todayStart.toISOString()),
     supabase
       .from("action_logs")
       .select("id, point_value, memo, action_at, actions(name, type, category)")
       .eq("user_id", userId)
+      .eq("race_id", raceId)
       .order("action_at", { ascending: false })
       .limit(5),
     supabase
       .from("action_logs")
       .select("id, point_value, memo, action_at, actions(name, type, category)")
       .eq("user_id", userId)
+      .eq("race_id", raceId)
       .gte("action_at", weekStart.toISOString())
       .order("action_at", { ascending: false }),
   ]);
@@ -184,7 +266,11 @@ export const getHomeSummary = cache(async (userId: string) => {
     comment: buildHomeComment({
       todayDelta,
       yesterdayDelta,
+      hasRival,
+      hasFriend,
+      commentTone,
       weekLogs: normalizedWeekLogs,
     }),
   };
-});
+  },
+);

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { LogoutButton } from "@/app/profile/setup/logout-button";
 import { getHistoryLogs } from "@/lib/history-server";
 import { getProfileByUserId } from "@/lib/profile-server";
+import { getOrCreateCurrentRace } from "@/lib/race-server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function HistoryPage() {
@@ -21,7 +22,8 @@ export default async function HistoryPage() {
     redirect("/profile/setup");
   }
 
-  const logs = await getHistoryLogs(user.id).catch(() => []);
+  const currentRace = await getOrCreateCurrentRace(user.id);
+  const logs = await getHistoryLogs(user.id, currentRace.id).catch(() => []);
 
   return (
     <main className="min-h-screen px-4 py-10">
@@ -34,6 +36,9 @@ export default async function HistoryPage() {
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               日付、行動名、健康・不健康の区分、増減ポイント、メモを一覧で見られます。
+            </p>
+            <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+              現在のレース: {currentRace.name}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -124,4 +129,3 @@ export default async function HistoryPage() {
     </main>
   );
 }
-

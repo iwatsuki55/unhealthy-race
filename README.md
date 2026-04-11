@@ -62,6 +62,115 @@ Step 8 を実装済みです。
 - ホーム画面に今週の推移を追加
 - 日ごとの増減ポイントを簡易棒グラフで表示
 
+Step 9 を実装済みです。
+
+- `races` / `race_members` を追加
+- `action_logs` に `race_id` を追加
+- 現在のレースを自動取得 / 自動作成する仕組みを追加
+- ホーム、履歴、行動登録を現在のレース単位で集計するよう変更
+
+Step 10 を実装済みです。
+
+- 新しいレースを開始するフォームを追加
+- 既存レースをアーカイブして、新レースを開始する処理を追加
+- ログ削除なしでポイントをゼロから再スタートできるよう変更
+
+Step 11 を実装済みです。
+
+- 招待コード発行機能を追加
+- 招待コードでレース参加する機能を追加
+- 友達 / ライバルの参加種別を選べるよう追加
+
+Step 12 を実装済みです。
+
+- ホーム画面にレース参加メンバーの比較表示を追加
+- 参加メンバーの現在ポイントと順位を表示
+- ライバルがいるレースでは、コメントを少し皮肉寄りに切り替えるよう追加
+
+Step 13 を実装済みです。
+
+- ホーム上部に順位、トップとの差、ライバルとの差を追加
+- ライバル向けコメントのパターンを増やし、対戦感を強化
+- 既存の比較表示を保ったまま、対戦ホームらしい見え方に調整
+
+Step 14 を実装済みです。
+
+- `profiles.comment_tone` を追加
+- 初回プロフィール設定でコメントトーンを選べるよう追加
+- ホームからコメントトーンを更新できるよう追加
+- `やさしめ` / `皮肉多め` の切り替えに対応
+
+Step 15 を実装済みです。
+
+- ホームのランキング演出を強化
+- トップ3を見やすく表示
+- 各メンバーに `優勝候補` や `追い上げ圏` などのラベルを追加
+
+Step 16 を実装済みです。
+
+- ランキング表示に `🥇🥈🥉` を追加
+- `友達` と `ライバル` の見え方をさらに分岐
+- 前回レースの勝敗が分かる結果カードを追加
+
+Step 17 を実装済みです。
+
+- スクリーンショット共有向けの `共有用サマリー` カードを追加
+- 現在順位、トップ差、ライバル差、今日の増減を1枚に集約
+- 上位3人を共有カード内でも見やすく表示
+
+Step 18 を実装済みです。
+
+- 新しいレース開始直後に、前回結果をモーダル風に強調表示
+- 共有用サマリーにレース名と期間感を追加
+- 共有カードのスクリーンショット用途をさらに強化
+
+Step 19 を実装済みです。
+
+- 前回結果を閉じる UI を追加
+- ホームにレース終了ルールを明示
+- 結果確定のタイミングが分かる説明を追加
+
+Step 20 を実装済みです。
+
+- ホーム上部に現在レースの終了予定日を表示
+- 終了目安までの残り日数を表示
+- レース終了ルールを終了予定日ベースでも読めるよう改善
+
+Step 21 を実装済みです。
+
+- 終了が近いレースをホーム上で強調表示
+- レース終了トリガーが自分かオーナーかを表示
+
+Step 22 を実装済みです。
+
+- 新しいレース開始時に 7日 / 14日 / 30日 の期間を選択可能
+- ホームの終了予定表示を実際の `end_at` ベースに変更
+
+Step 23 を実装済みです。
+
+- 共有用サマリーにも終了間近の演出を追加
+- レース参加メンバー一覧にも締切が近い案内を追加
+
+Step 24 を実装済みです。
+
+- 終了予定日を過ぎたレースを `終了待ち` として表示
+- オーナーには `このレースを終了して次へ進む` 導線を強調表示
+
+Step 25 を実装済みです。
+
+- 参加者側にも `終了待ち` を大きく表示
+- 終了トリガー表示をオーナーのニックネームベースに変更
+
+Step 26 を実装済みです。
+
+- 終了待ちカード内に暫定順位とトップ差を表示
+- 終了トリガーを終了待ちカード内でも確認可能に改善
+
+Step 27 を実装済みです。
+
+- 終了待ち中でも記録は継続できることを明示
+- 行動登録画面でも `暫定記録` の案内を追加
+
 ## 前提環境
 
 - Node.js 20 以上
@@ -107,6 +216,56 @@ Supabase ダッシュボードの `SQL Editor` で、次の順に実行してく
 
 これにより、プロフィール保存と今後の行動マスタ取得に必要なテーブルが作成されます。
 
+Seed 済みの行動マスタには、`歩かなかった`、`午前中から飲んだ`、`運動した`、
+`ヨガやサウナでリフレッシュした` も含まれます。
+
+## Step 9 の SQL 適用
+
+Supabase ダッシュボードの `SQL Editor` で、
+[supabase/migrations/202604101000_step9_races.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101000_step9_races.sql)
+を実行してください。
+
+これにより、レース管理用の `races` / `race_members` と、
+`action_logs.race_id` が追加されます。既存ログも現在の個人レースへ自動でひもづけられます。
+
+## Step 11 の SQL 適用
+
+Supabase ダッシュボードの `SQL Editor` で、
+[supabase/migrations/202604101100_step11_race_invites.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101100_step11_race_invites.sql)
+を実行してください。
+
+これにより、招待コード管理用の `race_invites` テーブルが追加されます。
+
+## Step 12 の SQL 適用
+
+Supabase ダッシュボードの `SQL Editor` で、
+[supabase/migrations/202604101200_step12_profiles_shared.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101200_step12_profiles_shared.sql)
+を実行してください。
+
+これにより、同じレースに参加しているメンバーどうしで、比較表示に必要なニックネームを参照できるようになります。
+
+続けて、
+[supabase/migrations/202604101210_step12_race_members_shared.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101210_step12_race_members_shared.sql)
+も実行してください。
+
+これにより、同じレースに参加しているメンバーどうしで `race_members` を参照できるようになり、ホームの参加メンバー一覧が正しく表示されます。
+
+もし Step 12 の途中でプロフィール保存やメンバー表示が不安定になった場合は、
+[supabase/migrations/202604101220_step12_safe_rls.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101220_step12_safe_rls.sql)
+を追加で実行してください。比較表示に必要な RLS を安全な関数経由に置き換えます。
+
+メンバー名は見えるのに他ユーザーのポイントが `0pt` のままの場合は、
+[supabase/migrations/202604101230_step12_action_logs_shared.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101230_step12_action_logs_shared.sql)
+も実行してください。同じレースのメンバーどうしでポイント集計に必要な `action_logs` を参照できるようになります。
+
+## Step 14 の SQL 適用
+
+Supabase ダッシュボードの `SQL Editor` で、
+[supabase/migrations/202604101300_step14_comment_tone.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202604101300_step14_comment_tone.sql)
+を実行してください。
+
+これにより、プロフィールにコメントトーン設定が追加されます。
+
 ## ディレクトリ構成
 
 ```text
@@ -126,6 +285,8 @@ lib/
   point-rules.ts
   profile-options.ts
   profile-server.ts
+  race-invite-server.ts
+  race-server.ts
   supabase/
   env.ts
 supabase/
@@ -143,4 +304,4 @@ middleware.ts
 
 ## 今後の実装予定
 
-- MVP 実装はひと通り完了
+- 次は対戦ホームの演出をさらに強め、コメントトーン切り替えやランキング体験を広げるフェーズ

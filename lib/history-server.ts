@@ -30,12 +30,13 @@ function toSingleAction(
   return Array.isArray(action) ? action[0] ?? null : action;
 }
 
-export const getHistoryLogs = cache(async (userId: string) => {
+export const getHistoryLogs = cache(async (userId: string, raceId: string) => {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("action_logs")
     .select("id, point_value, memo, action_at, actions(name, type, category)")
     .eq("user_id", userId)
+    .eq("race_id", raceId)
     .order("action_at", { ascending: false });
 
   if (error) {
@@ -47,4 +48,3 @@ export const getHistoryLogs = cache(async (userId: string) => {
     action: toSingleAction(log.actions),
   }));
 });
-

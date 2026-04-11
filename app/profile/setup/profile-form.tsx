@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   ageGroupOptions,
+  commentToneOptions,
   genderOptions,
   type ProfileFormState,
 } from "@/lib/profile-options";
@@ -17,6 +18,7 @@ type ProfileFormProps = {
   defaultNickname?: string | null;
   defaultAgeGroup?: string | null;
   defaultGender?: string | null;
+  defaultCommentTone?: string | null;
 };
 
 function SubmitButton() {
@@ -37,6 +39,7 @@ export function ProfileForm({
   defaultNickname,
   defaultAgeGroup,
   defaultGender,
+  defaultCommentTone,
 }: ProfileFormProps) {
   const [state, formAction] = useActionState(saveProfile, initialState);
 
@@ -103,6 +106,30 @@ export function ProfileForm({
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label
+          htmlFor="comment_tone"
+          className="mb-2 block text-sm font-medium text-slate-700"
+        >
+          コメントトーン
+        </label>
+        <select
+          id="comment_tone"
+          name="comment_tone"
+          defaultValue={defaultCommentTone ?? "gentle"}
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+        >
+          {commentToneOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 text-xs leading-5 text-slate-500">
+          皮肉多めを選ぶと、ホームのコメントが少しブラックユーモア寄りになります。
+        </p>
       </div>
 
       {state.error ? (

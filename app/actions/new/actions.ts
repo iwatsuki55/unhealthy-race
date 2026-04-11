@@ -7,6 +7,7 @@ import {
   MAX_HEALTHY_REDUCTION_PER_DAY,
   MAX_SAME_ACTION_PER_DAY,
 } from "@/lib/point-rules";
+import { getOrCreateCurrentRace } from "@/lib/race-server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type ActionLogFormState = {
@@ -49,6 +50,8 @@ export async function saveActionLog(
     redirect("/login");
   }
 
+  const currentRace = await getOrCreateCurrentRace(user.id);
+
   const actionId = getStringValue(formData, "action_id");
   const memo = getStringValue(formData, "memo");
 
@@ -84,6 +87,7 @@ export async function saveActionLog(
         .from("action_logs")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
+        .eq("race_id", currentRace.id)
         .eq("action_id", action.id)
         .gte("action_at", startIso)
         .lt("action_at", endIso),
@@ -91,9 +95,14 @@ export async function saveActionLog(
         .from("action_logs")
         .select("point_value")
         .eq("user_id", user.id)
+        .eq("race_id", currentRace.id)
         .gte("action_at", startIso)
         .lt("action_at", endIso),
-      supabase.from("action_logs").select("point_value").eq("user_id", user.id),
+      supabase
+        .from("action_logs")
+        .select("point_value")
+        .eq("user_id", user.id)
+        .eq("race_id", currentRace.id),
     ]);
 
   if (sameActionCountError || todayLogsError || allLogsError) {
@@ -141,6 +150,7 @@ export async function saveActionLog(
   }
 
   const { error } = await supabase.from("action_logs").insert({
+    race_id: currentRace.id,
     user_id: user.id,
     action_id: action.id,
     point_value: effectivePointValue,
@@ -156,5 +166,6 @@ export async function saveActionLog(
 
   revalidatePath("/actions/new");
   revalidatePath("/home");
+  revalidatePath("/history");
   redirect("/home?action_saved=1");
 }

@@ -60,7 +60,7 @@ export default async function ProfileSetupPage() {
           </dl>
 
           <div className="pt-6">
-            <ProfileForm />
+            <ProfileForm defaultCommentTone={profile?.comment_tone ?? "gentle"} />
           </div>
         </section>
       </div>

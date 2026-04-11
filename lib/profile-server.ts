@@ -5,7 +5,7 @@ export const getProfileByUserId = cache(async (userId: string) => {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, nickname, age_group, gender, created_at")
+    .select("id, nickname, age_group, gender, comment_tone, created_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -15,4 +15,3 @@ export const getProfileByUserId = cache(async (userId: string) => {
 
   return data;
 });
-
