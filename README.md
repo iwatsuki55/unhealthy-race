@@ -218,6 +218,12 @@ cp .env.example .env.local
 ```
 
 4. `.env.local` に Supabase の URL と Anon Key を設定します。
+
+医療英語プロトタイプの AI 評価を試したい場合は、追加で以下も設定します。
+
+```bash
+OPENAI_API_KEY=your-openai-api-key
+```
 5. 開発サーバーを起動します。
 
 ```bash
@@ -291,6 +297,27 @@ Supabase ダッシュボードの `SQL Editor` で、
 を実行してください。
 
 これにより、プロフィールにコメントトーン設定が追加されます。
+
+## 医療英語プロトタイプの復習保存 SQL
+
+医療英語プロトタイプで、スピーキングやロールプレイの復習項目を
+Supabase に保存したい場合は、Supabase ダッシュボードの `SQL Editor` で、
+[supabase/migrations/202605011100_medical_english_review_items.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202605011100_medical_english_review_items.sql)
+を実行してください。
+
+これにより、`medical_english_review_items` テーブルと RLS が追加されます。
+
+未実行の間も、医療英語プロトタイプはローカル保存にフォールバックします。
+ログイン済みかつ上記 SQL 適用後は、復習項目が Supabase に保存されます。
+
+## 医療英語プロトタイプの練習結果保存 SQL
+
+医療英語プロトタイプで、練習セッションの結果サマリーも Supabase に保存したい場合は、
+Supabase ダッシュボードの `SQL Editor` で、
+[supabase/migrations/202605011230_medical_english_practice_sessions.sql](/Users/hidetakaiwatsuki/Library/Mobile%20Documents/com~apple~CloudDocs/Codex/supabase/migrations/202605011230_medical_english_practice_sessions.sql)
+を実行してください。
+
+これにより、`medical_english_practice_sessions` テーブルと RLS が追加されます。
 
 ## ディレクトリ構成
 

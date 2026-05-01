@@ -6,9 +6,17 @@
   color-scheme: light;
   --background: #f5f7f2;
   --foreground: #1f2937;
+  --medical-ink: #10343a;
+  --medical-accent: #0f766e;
+  --medical-paper: rgba(255, 255, 255, 0.82);
 }
 
 body {
+  font-family:
+    "Avenir Next",
+    "Helvetica Neue",
+    "Segoe UI",
+    sans-serif;
   background:
     radial-gradient(circle at top, rgba(216, 239, 227, 0.8), transparent 35%),
     linear-gradient(180deg, #f8fbf9 0%, var(--background) 100%);
@@ -24,3 +32,21 @@ a {
   text-decoration: none;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    "Iowan Old Style",
+    "Palatino Linotype",
+    "Book Antiqua",
+    Georgia,
+    serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: rgba(20, 184, 166, 0.18);
+}
