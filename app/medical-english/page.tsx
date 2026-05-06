@@ -32,6 +32,10 @@ export default function MedicalEnglishHomePage() {
               Friend Test Build
             </div>
 
+            <div className="mt-4 max-w-xl rounded-[1.4rem] border border-white/10 bg-white/10 px-4 py-3 text-sm leading-6 text-slate-100 backdrop-blur">
+              登録なしでそのまま練習できます。保存や復習の同期をしたくなった時だけログインしてください。
+            </div>
+
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/medical-english/onboarding"
@@ -81,7 +85,7 @@ export default function MedicalEnglishHomePage() {
             今日のおすすめ
           </h3>
           <div className="mt-4 rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-            ログインすると、復習項目と練習結果が保存されます。ログインしなくても基本の体験はそのまま試せます。
+            ログインなしでも、レッスン、音声入力、AIロールプレイまではそのまま試せます。ログインすると復習項目と練習結果を保存できます。
           </div>
           <div className="mt-5 rounded-[1.8rem] border border-teal-100 bg-[linear-gradient(180deg,#edfffb_0%,#ffffff_100%)] p-5">
             <div className="flex flex-wrap items-center gap-2 text-xs text-teal-800">

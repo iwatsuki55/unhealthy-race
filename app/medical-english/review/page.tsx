@@ -20,6 +20,9 @@ export default function MedicalEnglishReviewPage() {
             この画面は、MVP仕様の「復習一覧」を触れるようにした試作です。
             苦手の理由、次の復習タイミング、再挑戦への導線をまとめています。
           </p>
+          <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-900">
+            ログインしていない場合も、この端末では復習項目を保持できます。別の端末でも続けたい時だけログインしてください。
+          </div>
         </div>
 
         <div className="rounded-[2rem] border border-slate-200 bg-slate-950 p-7 text-white shadow-soft">

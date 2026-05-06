@@ -61,16 +61,24 @@ export default async function MedicalEnglishLayout({
 
             {user ? (
               <div className="flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-                <span className="font-semibold">保存有効</span>
+                <span className="font-semibold">保存オン</span>
                 <LogoutButton />
               </div>
             ) : (
-              <Link
-                href="/login?next=/medical-english"
-                className="rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
-              >
-                ログインして保存
-              </Link>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Link
+                  href="/medical-english/lesson/fever-first-visit"
+                  className="rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
+                >
+                  まず試す
+                </Link>
+                <Link
+                  href="/login?next=/medical-english"
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-teal-200 hover:text-teal-800"
+                >
+                  保存したい人はログイン
+                </Link>
+              </div>
             )}
           </div>
         </div>
