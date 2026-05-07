@@ -21,7 +21,7 @@ export default function MedicalEnglishReviewPage() {
             苦手の理由、次の復習タイミング、再挑戦への導線をまとめています。
           </p>
           <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-900">
-            ログインしていない場合も、この端末では復習項目を保持できます。別の端末でも続けたい時だけログインしてください。
+            今回の友人テストでは、練習の流れと復習の見え方を気軽に触ってもらう想定です。保存の仕組みは裏で持たせつつ、画面上ではそのまま使える形にしています。
           </div>
         </div>
 

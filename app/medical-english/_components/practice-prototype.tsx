@@ -390,11 +390,9 @@ export function PracticePrototype({
         });
 
         if (response.ok) {
-          setSessionSaveStatus("この練習結果を Supabase に保存しました。");
+          setSessionSaveStatus("この練習結果を保存しました。");
         } else if (response.status === 401) {
-          setSessionSaveStatus(
-            "練習結果はこの場で確認できます。あとで残したくなったらログインして保存をオンにできます。",
-          );
+          setSessionSaveStatus("練習結果はこの画面でそのまま確認できます。");
         } else {
           setSessionSaveStatus("練習結果の保存はまだ完了していません。");
         }
@@ -549,8 +547,8 @@ export function PracticePrototype({
 
     setReviewSaveStatus(
       result.source === "database"
-        ? "Supabase に復習項目を保存しました。"
-        : "この端末に復習項目を保存しました。別の端末でも続けたい時だけログインしてください。",
+        ? "復習項目を保存しました。"
+        : "この端末に復習項目を保存しました。",
     );
   }
 
@@ -572,8 +570,8 @@ export function PracticePrototype({
 
     setReviewSaveStatus(
       result.source === "database"
-        ? "Supabase に復習項目を保存しました。"
-        : "この端末に復習項目を保存しました。別の端末でも続けたい時だけログインしてください。",
+        ? "復習項目を保存しました。"
+        : "この端末に復習項目を保存しました。",
     );
   }
 
