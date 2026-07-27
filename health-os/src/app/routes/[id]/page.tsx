@@ -5,6 +5,7 @@ import { ExternalLink, Pencil } from "lucide-react";
 import { deleteRouteAction } from "@/app/routes/actions";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
+import { secondsToDurationInput } from "@/lib/format";
 import { routeRepository } from "@/modules/routes/infrastructure";
 
 interface RouteDetailPageProps {
@@ -18,12 +19,7 @@ function formatDistance(meters: number) {
 }
 
 function formatDuration(seconds: number | null) {
-  if (!seconds) {
-    return "No estimate";
-  }
-
-  const minutes = Math.round(seconds / 60);
-  return `${minutes} min`;
+  return seconds ? secondsToDurationInput(seconds) : "No estimate";
 }
 
 export default async function RouteDetailPage({ params }: RouteDetailPageProps) {
@@ -63,7 +59,7 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
           <p className="mt-2 text-lg font-semibold">{formatDistance(route.distanceMeters)}</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Estimate</p>
+          <p className="text-sm text-muted-foreground">Estimated Time</p>
           <p className="mt-2 text-lg font-semibold">
             {formatDuration(route.estimatedDurationSeconds)}
           </p>

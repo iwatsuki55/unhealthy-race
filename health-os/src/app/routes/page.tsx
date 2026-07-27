@@ -3,6 +3,7 @@ import { Map, Plus, Star } from "lucide-react";
 
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
+import { secondsToDurationInput } from "@/lib/format";
 import { routeRepository } from "@/modules/routes/infrastructure";
 
 function formatDistance(meters: number) {
@@ -10,12 +11,7 @@ function formatDistance(meters: number) {
 }
 
 function formatDuration(seconds: number | null) {
-  if (!seconds) {
-    return "No estimate";
-  }
-
-  const minutes = Math.round(seconds / 60);
-  return `${minutes} min`;
+  return seconds ? secondsToDurationInput(seconds) : "No estimate";
 }
 
 export default async function RoutesPage() {
@@ -23,11 +19,11 @@ export default async function RoutesPage() {
   const routes = await routeRepository.listByUser(userId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-muted-foreground">Routes</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-normal">Route Management</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-normal">Route Management</h1>
         </div>
         <Button asChild>
           <Link href="/routes/new">
@@ -38,13 +34,13 @@ export default async function RoutesPage() {
       </div>
 
       {routes.length === 0 ? (
-        <section className="rounded-lg border border-border bg-card p-6">
+        <section className="rounded-lg border border-border bg-card p-8">
           <Map className="h-5 w-5 text-primary" aria-hidden="true" />
-          <h2 className="mt-3 text-lg font-semibold tracking-normal">No routes yet</h2>
+          <h2 className="mt-4 text-xl font-semibold tracking-normal">Start with a favorite loop</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Add reusable running routes first. Running logs will be able to reference them later.
+            Save your usual routes once, then attach them to future runs with a single choice.
           </p>
-          <Button asChild className="mt-4" variant="outline">
+          <Button asChild className="mt-5">
             <Link href="/routes/new">Create the first route</Link>
           </Button>
         </section>

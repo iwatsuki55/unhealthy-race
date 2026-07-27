@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getCurrentUserId } from "@/core/application/current-user";
+import { durationInputToSeconds, kilometersInputToMeters } from "@/lib/format";
 import type { CreateRunInput, UpdateRunInput } from "@/modules/running/domain";
 import { runFormSchema } from "@/modules/running/domain";
 import { runRepository } from "@/modules/running/infrastructure";
@@ -26,8 +27,8 @@ function parseRunFormData(formData: FormData): CreateRunInput {
   const input = runFormSchema.parse({
     runDate: formData.get("runDate"),
     startedAt: getOptionalString(formData, "startedAt"),
-    durationSeconds: formData.get("durationSeconds"),
-    distanceMeters: formData.get("distanceMeters"),
+    durationSeconds: durationInputToSeconds(formData.get("duration")),
+    distanceMeters: kilometersInputToMeters(formData.get("distanceKm")),
     routeId: formData.get("routeId"),
     averageHeartRate: formData.get("averageHeartRate"),
     maximumHeartRate: formData.get("maximumHeartRate"),

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { getCurrentUserId } from "@/core/application/current-user";
+import { durationInputToSeconds, kilometersInputToMeters } from "@/lib/format";
 import { routeFormSchema } from "@/modules/routes/domain";
 import { routeRepository } from "@/modules/routes/infrastructure";
 
@@ -14,8 +15,8 @@ function getBoolean(formData: FormData, key: string) {
 function parseRouteFormData(formData: FormData) {
   return routeFormSchema.parse({
     name: formData.get("name"),
-    distanceMeters: formData.get("distanceMeters"),
-    estimatedDurationSeconds: formData.get("estimatedDurationSeconds"),
+    distanceMeters: kilometersInputToMeters(formData.get("distanceKm")),
+    estimatedDurationSeconds: durationInputToSeconds(formData.get("estimatedDuration")),
     elevationGainMeters: formData.get("elevationGainMeters"),
     description: formData.get("description"),
     surfaceType: formData.get("surfaceType"),

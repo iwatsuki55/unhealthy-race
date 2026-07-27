@@ -3,6 +3,7 @@ import { Plus, Route } from "lucide-react";
 
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
+import { secondsToDurationInput } from "@/lib/format";
 import { routeRepository } from "@/modules/routes/infrastructure";
 import { runRepository } from "@/modules/running/infrastructure";
 
@@ -11,10 +12,7 @@ function formatDistance(meters: number) {
 }
 
 function formatDuration(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  return secondsToDurationInput(seconds);
 }
 
 function formatPace(secondsPerKm: number) {
@@ -33,11 +31,11 @@ export default async function RunningPage() {
   const routeNameById = new Map(routes.map((route) => [route.id, route.name]));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-muted-foreground">Running</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-normal">Running Log</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-normal">Running Log</h1>
         </div>
         <Button asChild>
           <Link href="/running/new">
@@ -48,14 +46,14 @@ export default async function RunningPage() {
       </div>
 
       {runs.length === 0 ? (
-        <section className="rounded-lg border border-border bg-card p-6">
+        <section className="rounded-lg border border-border bg-card p-8">
           <Route className="h-5 w-5 text-primary" aria-hidden="true" />
-          <h2 className="mt-3 text-lg font-semibold tracking-normal">No runs yet</h2>
+          <h2 className="mt-4 text-xl font-semibold tracking-normal">Log your first run</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Add your first manual running log. Routes are optional, but reusable routes can be
-            selected if you have created them.
+            Capture the essentials first: date, distance, duration, and route. Extra details can
+            wait until they matter.
           </p>
-          <Button asChild className="mt-4" variant="outline">
+          <Button asChild className="mt-5">
             <Link href="/running/new">Log the first run</Link>
           </Button>
         </section>

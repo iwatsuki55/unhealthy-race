@@ -5,6 +5,7 @@ import { ExternalLink, Pencil } from "lucide-react";
 import { deleteRunAction } from "@/app/running/actions";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
+import { secondsToDurationInput } from "@/lib/format";
 import { routeRepository } from "@/modules/routes/infrastructure";
 import { runRepository } from "@/modules/running/infrastructure";
 
@@ -19,10 +20,7 @@ function formatDistance(meters: number) {
 }
 
 function formatDuration(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  return secondsToDurationInput(seconds);
 }
 
 function formatPace(secondsPerKm: number) {
@@ -119,7 +117,7 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
         <div className="rounded-lg border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">Temperature</p>
           <p className="mt-2 text-base font-semibold">
-            {formatOptional(run.temperatureCelsius, " C")}
+            {formatOptional(run.temperatureCelsius, " °C")}
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">

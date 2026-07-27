@@ -24,7 +24,7 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
   const updateRoute = updateRouteAction.bind(null, route.id);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <Link
           className="text-sm text-muted-foreground hover:text-foreground"
@@ -32,10 +32,10 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
         >
           Back to route
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-normal">Edit Route</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-normal">Edit Route</h1>
       </div>
 
-      <section className="rounded-lg border border-border bg-card p-5">
+      <section>
         <RouteForm action={updateRoute} route={route} submitLabel="Save route" />
       </section>
     </div>
