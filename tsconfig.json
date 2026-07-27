@@ -36,6 +36,10 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "health-os",
+    "brushmap-ai",
+    "ai-minutes-mvp",
+    "youtube-healthtech-starter"
   ]
 }
