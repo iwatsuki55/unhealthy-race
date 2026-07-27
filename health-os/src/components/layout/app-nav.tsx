@@ -1,7 +1,21 @@
 import Link from "next/link";
-import { Dumbbell, Flag, Map, NotebookPen, Route, Settings, SunMedium } from "lucide-react";
+import type { Route as NextRoute } from "next";
+import {
+  Dumbbell,
+  Flag,
+  Map,
+  NotebookPen,
+  Route,
+  Settings,
+  SunMedium,
+  type LucideIcon
+} from "lucide-react";
 
-const navItems = [
+const navItems: Array<{
+  href: NextRoute;
+  label: string;
+  icon: LucideIcon;
+}> = [
   { href: "/today", label: "Today", icon: SunMedium },
   { href: "/running", label: "Running", icon: Route },
   { href: "/strength", label: "Strength", icon: Dumbbell },

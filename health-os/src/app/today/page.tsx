@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { Dumbbell, Flag, Map, NotebookPen, Plus, Route } from "lucide-react";
+import type { Route as NextRoute } from "next";
+import { Dumbbell, Flag, Map, NotebookPen, Plus, Route, type LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-const quickActions = [
+const quickActions: Array<{
+  href: NextRoute;
+  label: string;
+  icon: LucideIcon;
+}> = [
   { href: "/running/new", label: "Log Run", icon: Route },
   { href: "/strength/new", label: "Log Strength", icon: Dumbbell },
   { href: "/journal/new", label: "Journal", icon: NotebookPen },
@@ -27,10 +32,10 @@ export default function TodayPage() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4 text-card-foreground">
-          <p className="text-sm font-medium">Today's workout</p>
+          <p className="text-sm font-medium">Today&apos;s workout</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            No workout logic yet. This area will later surface today's focus from goals and recent
-            training context.
+            No workout logic yet. This area will later surface today&apos;s focus from goals and
+            recent training context.
           </p>
         </div>
       </section>
