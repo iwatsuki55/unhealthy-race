@@ -1,0 +1,57 @@
+name: Polish / Validation Task
+description: Track UX polish, validation, accessibility, mobile, or consistency work.
+title: "[Polish]: "
+labels:
+  - type:polish
+  - status:needs-triage
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Usability
+        - Validation
+        - Accessibility
+        - Mobile
+        - Empty state
+        - Error state
+        - Copy
+        - Formatting
+        - Performance
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Today
+        - Running
+        - Strength
+        - Routes
+        - Goals
+        - Journal
+        - Settings
+        - Cross-module
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current experience
+      placeholder: What feels inconsistent, unclear, or fragile?
+    validations:
+      required: true
+  - type: textarea
+    id: desired
+    attributes:
+      label: Desired experience
+      placeholder: What should be true after this polish task?
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      placeholder: How should this be checked on desktop, tablet, and mobile?

@@ -1,0 +1,61 @@
+name: Bug Report
+description: Report broken behavior in an existing Health OS MVP workflow.
+title: "[Bug]: "
+labels:
+  - type:bug
+  - status:needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for broken behavior in Today, Running, Strength, Routes, Goals, Journal, or Settings.
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Today
+        - Running
+        - Strength
+        - Routes
+        - Goals
+        - Journal
+        - Settings
+        - Cross-module
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Submit ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: data_context
+    attributes:
+      label: Data context
+      description: Do not paste sensitive health details. Use approximate or anonymized values.
+      placeholder: "Example: run with route, strength session with two exercises, active race goal."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      render: shell

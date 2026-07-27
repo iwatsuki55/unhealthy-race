@@ -1,0 +1,52 @@
+name: Feature Request
+description: Propose an improvement within the current Health OS product direction.
+title: "[Feature]: "
+labels:
+  - type:feature
+  - status:needs-triage
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Today
+        - Running
+        - Strength
+        - Routes
+        - Goals
+        - Journal
+        - Settings
+        - Cross-module
+        - Future module
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      placeholder: What daily health management problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: Describe the smallest useful version.
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Scope check
+      options:
+        - label: This does not require AI Coach.
+        - label: This does not require Apple Health, Garmin, Strava, Google Calendar, or weather.
+        - label: This does not add a new health module unless labeled future.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ] ...
+        - [ ] ...

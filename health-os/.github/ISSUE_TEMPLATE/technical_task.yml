@@ -1,0 +1,42 @@
+name: Technical Task
+description: Track internal engineering work without direct UX changes.
+title: "[Tech]: "
+labels:
+  - type:infra
+  - status:needs-triage
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Architecture
+        - Prisma
+        - Repository
+        - Server Actions
+        - Tests
+        - Tooling
+        - Documentation
+        - Seed data
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      placeholder: What engineering outcome do we need?
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      placeholder: What must not change?
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      placeholder: |
+        - [ ] Tests updated
+        - [ ] Lint passes
+        - [ ] Build passes

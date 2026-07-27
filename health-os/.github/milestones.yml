@@ -1,0 +1,28 @@
+# Health OS milestone plan.
+# GitHub milestones are not read from YAML automatically; use this as the source of truth.
+
+- title: v0.1.0 MVP
+  description: >
+    Local-first MVP for Today, Running, Strength, Routes, Goals, Journal, and Settings placeholder.
+    Includes validation, seed data, documentation, and release readiness.
+  state: open
+
+- title: v0.1.1 Stabilization
+  description: >
+    Small fixes found during daily personal use after v0.1.0. No new modules.
+  state: open
+
+- title: v0.2.0 Settings and Preferences
+  description: >
+    Make Settings real: timezone, display name, units, and app preferences.
+  state: open
+
+- title: v0.3.0 Insights Foundation
+  description: >
+    Lightweight trends and summaries using existing manual data. No AI or integrations yet.
+  state: open
+
+- title: Future Modules
+  description: >
+    Backlog for post-MVP modules such as nutrition, sleep, recovery, Apple Health, calendar, and AI Coach.
+  state: open

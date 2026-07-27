@@ -1,0 +1,118 @@
+# Health OS label taxonomy.
+# Sync manually with GitHub UI, gh CLI, or a label sync tool.
+
+- name: type:feature
+  color: "0E8A16"
+  description: New user-facing capability.
+
+- name: type:bug
+  color: "D73A4A"
+  description: Something is broken or behaves incorrectly.
+
+- name: type:polish
+  color: "C5DEF5"
+  description: UX, visual, copy, accessibility, or responsive refinement.
+
+- name: type:refactor
+  color: "5319E7"
+  description: Internal code structure improvement without intended behavior change.
+
+- name: type:test
+  color: "FBCA04"
+  description: Automated test coverage, test data, or verification work.
+
+- name: type:docs
+  color: "0075CA"
+  description: Documentation, templates, planning, or release notes.
+
+- name: type:infra
+  color: "6F42C1"
+  description: Tooling, build, CI, dependency, Prisma, or local dev infrastructure.
+
+- name: priority:p0
+  color: "B60205"
+  description: Critical blocker for daily use or release readiness.
+
+- name: priority:p1
+  color: "D93F0B"
+  description: High priority; should be handled soon.
+
+- name: priority:p2
+  color: "FBCA04"
+  description: Normal priority.
+
+- name: priority:p3
+  color: "C2E0C6"
+  description: Low priority or nice-to-have.
+
+- name: status:needs-triage
+  color: "EDEDED"
+  description: Needs scope, priority, or owner decision.
+
+- name: status:ready
+  color: "C2E0C6"
+  description: Ready for implementation.
+
+- name: status:blocked
+  color: "BFDADC"
+  description: Blocked by decision, dependency, or missing information.
+
+- name: status:in-review
+  color: "D4C5F9"
+  description: Awaiting review.
+
+- name: status:needs-design
+  color: "F9D0C4"
+  description: Needs UX/product/design decision before implementation.
+
+- name: module:today
+  color: "1D76DB"
+  description: Today Home command center.
+
+- name: module:running
+  color: "006B75"
+  description: Running Log and running-specific behavior.
+
+- name: module:strength
+  color: "7057FF"
+  description: Strength Training Log.
+
+- name: module:routes
+  color: "008672"
+  description: Route Management.
+
+- name: module:goals
+  color: "D876E3"
+  description: Goal Management and progress behavior.
+
+- name: module:journal
+  color: "BFD4F2"
+  description: Journal notes and daily signals.
+
+- name: module:settings
+  color: "E99695"
+  description: Settings, user preferences, timezone, units.
+
+- name: domain:data
+  color: "F9D0C4"
+  description: Prisma schema, repositories, persistence, data integrity.
+
+- name: domain:validation
+  color: "FEF2C0"
+  description: Form, schema, domain validation, conversions.
+
+- name: domain:a11y
+  color: "D4C5F9"
+  description: Accessibility and keyboard/screen reader behavior.
+
+- name: domain:mobile
+  color: "BFDADC"
+  description: Mobile layout, touch ergonomics, responsive issues.
+
+- name: release:v0.1.0
+  color: "0E8A16"
+  description: Health OS MVP release scope.
+
+- name: future
+  color: "FFFFFF"
+  description: Explicitly out of current MVP scope.
