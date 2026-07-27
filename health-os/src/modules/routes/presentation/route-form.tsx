@@ -1,9 +1,8 @@
-import type { InputHTMLAttributes } from "react";
-
 import type { RouteDto } from "@/modules/routes/domain";
 import { difficulties } from "@/core/shared";
 import { surfaceTypes } from "@/modules/routes/domain";
 
+import { QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
 import { Button } from "@/components/ui/button";
 import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
 
@@ -20,33 +19,6 @@ const textareaClass =
   "min-h-28 w-full rounded-md border border-input bg-background px-3 py-3 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring sm:text-sm";
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
-
-function UnitInput({
-  id,
-  name,
-  unit,
-  type = "text",
-  ...props
-}: InputHTMLAttributes<HTMLInputElement> & {
-  id: string;
-  name: string;
-  unit: string;
-}) {
-  return (
-    <div className="flex min-h-11 rounded-md border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-ring">
-      <input
-        {...props}
-        className="min-w-0 flex-1 rounded-l-md bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground sm:text-sm"
-        id={id}
-        name={name}
-        type={type}
-      />
-      <span className="inline-flex items-center border-l border-border px-3 text-sm text-muted-foreground">
-        {unit}
-      </span>
-    </div>
-  );
-}
 
 export function RouteForm({ action, route, submitLabel }: RouteFormProps) {
   return (
@@ -67,16 +39,25 @@ export function RouteForm({ action, route, submitLabel }: RouteFormProps) {
 
           <label className={labelClass} htmlFor="route-distance">
             Distance
-            <UnitInput
+            <TextUnitInput
               id="route-distance"
-              min="0.1"
+              inputMode="decimal"
               name="distanceKm"
+              pattern="^\d+(\.\d{1,2})?$"
               placeholder="6.0"
               required
-              step="0.01"
-              type="number"
+              title="Enter kilometers with up to 2 decimal places, such as 3.12 or 6.0."
               unit="km"
               defaultValue={metersToKilometersInput(route?.distanceMeters)}
+            />
+            <QuickFillGroup
+              label="Route distance quick values"
+              targetId="route-distance"
+              options={[
+                { label: "3 km", value: "3" },
+                { label: "5 km", value: "5" },
+                { label: "10 km", value: "10" }
+              ]}
             />
           </label>
         </div>
@@ -91,23 +72,37 @@ export function RouteForm({ action, route, submitLabel }: RouteFormProps) {
           <div className="grid gap-5 md:grid-cols-2">
             <label className={labelClass} htmlFor="route-estimated-time">
               Estimated Time
-              <UnitInput
+              <TextUnitInput
                 id="route-estimated-time"
+                inputMode="numeric"
                 name="estimatedDuration"
-                placeholder="00:35:00"
+                pattern="^(?:\d+:)?[0-5]?\d:[0-5]\d$"
+                placeholder="35:00"
+                title="Use mm:ss, such as 35:00, or hh:mm:ss, such as 01:05:30."
                 unit="hh:mm:ss"
                 defaultValue={secondsToDurationInput(route?.estimatedDurationSeconds)}
+              />
+              <QuickFillGroup
+                label="Estimated time quick values"
+                targetId="route-estimated-time"
+                options={[
+                  { label: "20 min", value: "20:00" },
+                  { label: "30 min", value: "30:00" },
+                  { label: "45 min", value: "45:00" },
+                  { label: "60 min", value: "01:00:00" }
+                ]}
               />
             </label>
 
             <label className={labelClass} htmlFor="route-elevation">
               Elevation
-              <UnitInput
+              <TextUnitInput
                 id="route-elevation"
-                min="1"
+                inputMode="numeric"
                 name="elevationGainMeters"
+                pattern="^\d+$"
                 placeholder="35"
-                type="number"
+                title="Enter elevation gain in whole meters."
                 unit="m"
                 defaultValue={route?.elevationGainMeters ?? ""}
               />

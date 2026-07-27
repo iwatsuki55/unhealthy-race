@@ -1,8 +1,7 @@
-import type { InputHTMLAttributes } from "react";
-
 import type { RouteDto } from "@/modules/routes/domain";
 import type { RunDto } from "@/modules/running/domain";
 
+import { PacePreview, QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
 import { Button } from "@/components/ui/button";
 import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
 
@@ -29,33 +28,6 @@ const textareaClass =
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
 
-function UnitInput({
-  id,
-  name,
-  unit,
-  type = "text",
-  ...props
-}: InputHTMLAttributes<HTMLInputElement> & {
-  id: string;
-  name: string;
-  unit: string;
-}) {
-  return (
-    <div className="flex min-h-11 rounded-md border border-input bg-background focus-within:border-primary focus-within:ring-2 focus-within:ring-ring">
-      <input
-        {...props}
-        className="min-w-0 flex-1 rounded-l-md bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground sm:text-sm"
-        id={id}
-        name={name}
-        type={type}
-      />
-      <span className="inline-flex items-center border-l border-border px-3 text-sm text-muted-foreground">
-        {unit}
-      </span>
-    </div>
-  );
-}
-
 export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
   return (
     <form action={action} className="grid gap-7">
@@ -75,28 +47,50 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
           <label className={labelClass} htmlFor="run-distance">
             Distance
-            <UnitInput
+            <TextUnitInput
               id="run-distance"
-              min="0.1"
+              inputMode="decimal"
               name="distanceKm"
+              pattern="^\d+(\.\d{1,2})?$"
               placeholder="6.0"
               required
-              step="0.01"
-              type="number"
+              title="Enter kilometers with up to 2 decimal places, such as 3.12 or 6.0."
               unit="km"
               defaultValue={metersToKilometersInput(run?.distanceMeters)}
+            />
+            <QuickFillGroup
+              label="Running distance quick values"
+              targetId="run-distance"
+              options={[
+                { label: "3 km", value: "3" },
+                { label: "5 km", value: "5" },
+                { label: "10 km", value: "10" }
+              ]}
             />
           </label>
 
           <label className={labelClass} htmlFor="run-duration">
             Duration
-            <UnitInput
+            <TextUnitInput
               id="run-duration"
+              inputMode="numeric"
               name="duration"
-              placeholder="00:35:00"
+              pattern="^(?:\d+:)?[0-5]?\d:[0-5]\d$"
+              placeholder="35:00"
               required
+              title="Use mm:ss, such as 35:00, or hh:mm:ss, such as 01:05:30."
               unit="hh:mm:ss"
               defaultValue={secondsToDurationInput(run?.durationSeconds)}
+            />
+            <QuickFillGroup
+              label="Running duration quick values"
+              targetId="run-duration"
+              options={[
+                { label: "20 min", value: "20:00" },
+                { label: "30 min", value: "30:00" },
+                { label: "45 min", value: "45:00" },
+                { label: "60 min", value: "01:00:00" }
+              ]}
             />
           </label>
 
@@ -117,6 +111,8 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
             </select>
           </label>
         </div>
+
+        <PacePreview distanceInputId="run-distance" durationInputId="run-duration" />
       </section>
 
       <details className="rounded-lg border border-border bg-card p-4 sm:p-5">
@@ -139,12 +135,13 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
             <label className={labelClass} htmlFor="run-avg-hr">
               Avg HR
-              <UnitInput
+              <TextUnitInput
                 id="run-avg-hr"
-                min="1"
+                inputMode="numeric"
                 name="averageHeartRate"
+                pattern="^\d+$"
                 placeholder="142"
-                type="number"
+                title="Enter average heart rate in bpm."
                 unit="bpm"
                 defaultValue={run?.averageHeartRate ?? ""}
               />
@@ -152,12 +149,13 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
             <label className={labelClass} htmlFor="run-max-hr">
               Max HR
-              <UnitInput
+              <TextUnitInput
                 id="run-max-hr"
-                min="1"
+                inputMode="numeric"
                 name="maximumHeartRate"
+                pattern="^\d+$"
                 placeholder="171"
-                type="number"
+                title="Enter maximum heart rate in bpm."
                 unit="bpm"
                 defaultValue={run?.maximumHeartRate ?? ""}
               />
@@ -165,12 +163,13 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
             <label className={labelClass} htmlFor="run-cadence">
               Cadence
-              <UnitInput
+              <TextUnitInput
                 id="run-cadence"
-                min="1"
+                inputMode="numeric"
                 name="cadenceStepsPerMinute"
+                pattern="^\d+$"
                 placeholder="176"
-                type="number"
+                title="Enter cadence as steps per minute."
                 unit="spm"
                 defaultValue={run?.cadenceStepsPerMinute ?? ""}
               />
@@ -178,12 +177,13 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
             <label className={labelClass} htmlFor="run-calories">
               Calories
-              <UnitInput
+              <TextUnitInput
                 id="run-calories"
-                min="1"
+                inputMode="numeric"
                 name="calories"
+                pattern="^\d+$"
                 placeholder="430"
-                type="number"
+                title="Enter calories in kcal."
                 unit="kcal"
                 defaultValue={run?.calories ?? ""}
               />
@@ -191,12 +191,13 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
             <label className={labelClass} htmlFor="run-temperature">
               Temperature
-              <UnitInput
+              <TextUnitInput
                 id="run-temperature"
+                inputMode="decimal"
                 name="temperatureCelsius"
+                pattern="^-?\d+(\.\d+)?$"
                 placeholder="28"
-                step="0.1"
-                type="number"
+                title="Enter temperature in Celsius."
                 unit="°C"
                 defaultValue={run?.temperatureCelsius ?? ""}
               />
@@ -204,13 +205,13 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
 
             <label className={labelClass} htmlFor="run-humidity">
               Humidity
-              <UnitInput
+              <TextUnitInput
                 id="run-humidity"
-                max="100"
-                min="0"
+                inputMode="numeric"
                 name="humidityPercent"
+                pattern="^(100|[1-9]?\d)$"
                 placeholder="65"
-                type="number"
+                title="Enter humidity from 0 to 100."
                 unit="%"
                 defaultValue={run?.humidityPercent ?? ""}
               />
@@ -221,11 +222,12 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
               <input
                 className={inputClass}
                 id="run-rpe"
-                max="10"
-                min="1"
+                inputMode="numeric"
                 name="perceivedEffort"
+                pattern="^([1-9]|10)$"
                 placeholder="6"
-                type="number"
+                title="Enter RPE from 1 to 10."
+                type="text"
                 defaultValue={run?.perceivedEffort ?? ""}
               />
             </label>

@@ -1,11 +1,25 @@
 export function metersToKilometersInput(meters: number | undefined) {
-  return meters === undefined ? "" : (meters / 1000).toString();
+  if (meters === undefined) {
+    return "";
+  }
+
+  return Number((meters / 1000).toFixed(2)).toString();
 }
 
 export function kilometersInputToMeters(value: FormDataEntryValue | null) {
-  const kilometers = Number(value);
+  if (typeof value !== "string") {
+    return value;
+  }
 
-  return Number.isFinite(kilometers) ? Math.round(kilometers * 1000) : value;
+  const trimmed = value.trim();
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(trimmed)) {
+    return value;
+  }
+
+  const kilometers = Number(trimmed);
+
+  return Number.isFinite(kilometers) && kilometers > 0 ? Math.round(kilometers * 1000) : value;
 }
 
 export function secondsToDurationInput(seconds: number | null | undefined) {
@@ -17,9 +31,13 @@ export function secondsToDurationInput(seconds: number | null | undefined) {
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
 
-  return [hours, minutes, remainingSeconds]
-    .map((part) => part.toString().padStart(2, "0"))
-    .join(":");
+  if (hours > 0) {
+    return [hours, minutes, remainingSeconds]
+      .map((part) => part.toString().padStart(2, "0"))
+      .join(":");
+  }
+
+  return [minutes, remainingSeconds].map((part) => part.toString().padStart(2, "0")).join(":");
 }
 
 export function durationInputToSeconds(value: FormDataEntryValue | null) {
@@ -27,7 +45,13 @@ export function durationInputToSeconds(value: FormDataEntryValue | null) {
     return value;
   }
 
-  const parts = value.split(":").map(Number);
+  const trimmed = value.trim();
+
+  if (!/^(?:\d+:)?[0-5]?\d:[0-5]\d$/.test(trimmed)) {
+    return value;
+  }
+
+  const parts = trimmed.split(":").map(Number);
 
   if (parts.some((part) => !Number.isFinite(part))) {
     return value;
