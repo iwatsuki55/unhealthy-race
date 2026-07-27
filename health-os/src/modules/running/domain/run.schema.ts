@@ -42,36 +42,41 @@ export const runSchema = z
     }
   );
 
-export const createRunInputSchema = z
-  .object({
-    runDate: dateStringSchema,
-    startedAt: dateTimeStringSchema.optional(),
-    durationSeconds: positiveIntSchema,
-    distanceMeters: positiveIntSchema,
-    routeId: nonEmptyStringSchema.optional(),
-    averageHeartRate: positiveIntSchema.optional(),
-    maximumHeartRate: positiveIntSchema.optional(),
-    cadenceStepsPerMinute: positiveIntSchema.optional(),
-    calories: positiveIntSchema.optional(),
-    temperatureCelsius: z.number().optional(),
-    humidityPercent: z.number().int().min(0).max(100).optional(),
-    shoes: z.string().trim().optional(),
-    screenshotAttachmentRef: z.string().trim().optional(),
-    perceivedEffort: ratingSchema.optional(),
-    notes: z.string().trim().optional()
-  })
-  .refine(
-    (run) =>
-      run.averageHeartRate === undefined ||
-      run.maximumHeartRate === undefined ||
-      run.maximumHeartRate >= run.averageHeartRate,
-    {
-      message: "Maximum heart rate must be greater than or equal to average heart rate.",
-      path: ["maximumHeartRate"]
-    }
-  );
+const runInputBaseSchema = z.object({
+  runDate: dateStringSchema,
+  startedAt: dateTimeStringSchema.optional(),
+  durationSeconds: positiveIntSchema,
+  distanceMeters: positiveIntSchema,
+  routeId: nonEmptyStringSchema.optional(),
+  averageHeartRate: positiveIntSchema.optional(),
+  maximumHeartRate: positiveIntSchema.optional(),
+  cadenceStepsPerMinute: positiveIntSchema.optional(),
+  calories: positiveIntSchema.optional(),
+  temperatureCelsius: z.number().optional(),
+  humidityPercent: z.number().int().min(0).max(100).optional(),
+  shoes: z.string().trim().optional(),
+  screenshotAttachmentRef: z.string().trim().optional(),
+  perceivedEffort: ratingSchema.optional(),
+  notes: z.string().trim().optional()
+});
 
-export const updateRunInputSchema = createRunInputSchema.partial();
+function hasValidHeartRateRange(run: { averageHeartRate?: number; maximumHeartRate?: number }) {
+  return (
+    run.averageHeartRate === undefined ||
+    run.maximumHeartRate === undefined ||
+    run.maximumHeartRate >= run.averageHeartRate
+  );
+}
+
+export const createRunInputSchema = runInputBaseSchema.refine(hasValidHeartRateRange, {
+  message: "Maximum heart rate must be greater than or equal to average heart rate.",
+  path: ["maximumHeartRate"]
+});
+
+export const updateRunInputSchema = runInputBaseSchema.partial().refine(hasValidHeartRateRange, {
+  message: "Maximum heart rate must be greater than or equal to average heart rate.",
+  path: ["maximumHeartRate"]
+});
 
 export const runFormSchema = z
   .object({
