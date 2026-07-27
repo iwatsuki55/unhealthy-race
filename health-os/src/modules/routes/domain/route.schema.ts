@@ -38,6 +38,30 @@ export const createRouteInputSchema = z.object({
 
 export const updateRouteInputSchema = createRouteInputSchema.partial();
 
+export const routeFormSchema = z.object({
+  name: nonEmptyStringSchema,
+  distanceMeters: z.coerce.number().int().positive(),
+  estimatedDurationSeconds: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.coerce.number().int().positive().optional()
+  ),
+  elevationGainMeters: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.coerce.number().int().positive().optional()
+  ),
+  description: z.string().trim().optional(),
+  surfaceType: z.enum(surfaceTypes).default("unknown"),
+  difficulty: z.enum(difficulties).default("moderate"),
+  googleMapsUrl: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().url().optional()
+  ),
+  isFavorite: z.coerce.boolean().default(false),
+  isActive: z.coerce.boolean().default(false),
+  notes: z.string().trim().optional()
+});
+
 export type RouteDto = z.infer<typeof routeSchema>;
 export type CreateRouteInput = z.infer<typeof createRouteInputSchema>;
 export type UpdateRouteInput = z.infer<typeof updateRouteInputSchema>;
+export type RouteFormInput = z.infer<typeof routeFormSchema>;
