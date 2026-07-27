@@ -73,6 +73,60 @@ export const createRunInputSchema = z
 
 export const updateRunInputSchema = createRunInputSchema.partial();
 
+export const runFormSchema = z
+  .object({
+    runDate: dateStringSchema,
+    startedAt: z.string().trim().optional(),
+    durationSeconds: z.coerce.number().int().positive(),
+    distanceMeters: z.coerce.number().int().positive(),
+    routeId: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      nonEmptyStringSchema.optional()
+    ),
+    averageHeartRate: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().positive().optional()
+    ),
+    maximumHeartRate: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().positive().optional()
+    ),
+    cadenceStepsPerMinute: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().positive().optional()
+    ),
+    calories: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().positive().optional()
+    ),
+    temperatureCelsius: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().optional()
+    ),
+    humidityPercent: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().min(0).max(100).optional()
+    ),
+    shoes: z.string().trim().optional(),
+    screenshotAttachmentRef: z.string().trim().optional(),
+    perceivedEffort: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce.number().int().min(1).max(10).optional()
+    ),
+    notes: z.string().trim().optional()
+  })
+  .refine(
+    (run) =>
+      run.averageHeartRate === undefined ||
+      run.maximumHeartRate === undefined ||
+      run.maximumHeartRate >= run.averageHeartRate,
+    {
+      message: "Maximum heart rate must be greater than or equal to average heart rate.",
+      path: ["maximumHeartRate"]
+    }
+  );
+
 export type RunDto = z.infer<typeof runSchema>;
 export type CreateRunInput = z.infer<typeof createRunInputSchema>;
 export type UpdateRunInput = z.infer<typeof updateRunInputSchema>;
+export type RunFormInput = z.infer<typeof runFormSchema>;
