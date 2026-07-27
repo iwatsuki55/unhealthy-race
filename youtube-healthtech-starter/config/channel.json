@@ -1,0 +1,16 @@
+{
+  "channel_name": "Healthtech Notes",
+  "language": "ja",
+  "default_duration_sec": 90,
+  "video_style": "explain_and_compare",
+  "tone": "clear_practical_trustworthy",
+  "target_audience": "医療DXやヘルステックに関心がある医療職、病院経営者、医療IT担当",
+  "thumbnail_style": "large_text_clean_contrast",
+  "upload_privacy": "private",
+  "compliance": {
+    "require_source_check": true,
+    "require_human_review": true,
+    "avoid_individual_medical_advice": true,
+    "default_disclaimer": "このコンテンツは一般的な情報提供を目的としており、個別の診断や治療の助言ではありません。"
+  }
+}

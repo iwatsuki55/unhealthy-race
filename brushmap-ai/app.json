@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "BrushMap AI",
+    "slug": "brushmap-ai",
+    "version": "1.0.0",
+    "scheme": "brushmapai",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "ai.brushmap.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "BrushMap AI はブラッシング動作をその場で可視化するためにインカメラを使用します。映像は保存されません。"
+      }
+    },
+    "android": {
+      "package": "ai.brushmap.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4ab8eaf8-d8db-4863-91c8-0459a883f6e0"
+      }
+    }
+  }
+}
