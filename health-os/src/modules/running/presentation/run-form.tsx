@@ -1,19 +1,21 @@
 import type { RouteDto } from "@/modules/routes/domain";
 import type { RunDto } from "@/modules/running/domain";
 
+import { FormActions } from "@/components/forms/form-actions";
 import { PacePreview, QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
-import { Button } from "@/components/ui/button";
-import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
+import { RequiredMark } from "@/components/ui/required-mark";
+import {
+  formatDateInputValue,
+  metersToKilometersInput,
+  secondsToDurationInput
+} from "@/lib/format";
 
 interface RunFormProps {
   action: (formData: FormData) => void | Promise<void>;
+  cancelHref: `/running` | `/running/${string}`;
   routes: RouteDto[];
   run?: RunDto;
   submitLabel: string;
-}
-
-function toDateInputValue(date: Date | undefined) {
-  return date ? date.toISOString().slice(0, 10) : "";
 }
 
 function toDateTimeLocalValue(date: Date | null | undefined) {
@@ -28,25 +30,25 @@ const textareaClass =
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
 
-export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
+export function RunForm({ action, cancelHref, routes, run, submitLabel }: RunFormProps) {
   return (
     <form action={action} className="grid gap-7">
       <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
         <div className="grid gap-5 md:grid-cols-2">
           <label className={labelClass} htmlFor="run-date">
-            Date
+            Date <RequiredMark />
             <input
               className={inputClass}
               id="run-date"
               name="runDate"
               required
               type="date"
-              defaultValue={toDateInputValue(run?.runDate)}
+              defaultValue={formatDateInputValue(run?.runDate)}
             />
           </label>
 
           <label className={labelClass} htmlFor="run-distance">
-            Distance
+            Distance <RequiredMark />
             <TextUnitInput
               id="run-distance"
               inputMode="decimal"
@@ -70,7 +72,7 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
           </label>
 
           <label className={labelClass} htmlFor="run-duration">
-            Duration
+            Duration <RequiredMark />
             <TextUnitInput
               id="run-duration"
               inputMode="numeric"
@@ -269,9 +271,7 @@ export function RunForm({ action, routes, run, submitLabel }: RunFormProps) {
       </details>
 
       <div>
-        <Button className="h-11 px-5" type="submit">
-          {submitLabel}
-        </Button>
+        <FormActions cancelHref={cancelHref} submitLabel={submitLabel} />
       </div>
     </form>
   );

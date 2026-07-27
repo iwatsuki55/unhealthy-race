@@ -14,7 +14,7 @@ export default function NewGoalPage() {
       </div>
 
       <section>
-        <GoalForm action={createGoalAction} submitLabel="Save goal" />
+        <GoalForm action={createGoalAction} cancelHref="/goals" submitLabel="Save goal" />
       </section>
     </div>
   );

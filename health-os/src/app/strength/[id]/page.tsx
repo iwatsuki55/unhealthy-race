@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
 import { deleteStrengthSessionAction } from "@/app/strength/actions";
+import { ConfirmDeleteButton } from "@/components/forms/confirm-delete-button";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { secondsToDurationInput } from "@/lib/format";
@@ -145,9 +146,10 @@ export default async function StrengthDetailPage({ params }: StrengthDetailPageP
           This removes the manual strength training log.
         </p>
         <form action={deleteSession} className="mt-4">
-          <Button type="submit" variant="outline">
-            Delete session
-          </Button>
+          <ConfirmDeleteButton
+            confirmMessage="Delete this strength session and all of its exercises and sets?"
+            label="Delete session"
+          />
         </form>
       </section>
     </div>

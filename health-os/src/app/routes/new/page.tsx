@@ -14,7 +14,7 @@ export default function NewRoutePage() {
       </div>
 
       <section>
-        <RouteForm action={createRouteAction} submitLabel="Create route" />
+        <RouteForm action={createRouteAction} cancelHref="/routes" submitLabel="Create route" />
       </section>
     </div>
   );

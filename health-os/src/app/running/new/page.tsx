@@ -19,7 +19,12 @@ export default async function NewRunPage() {
       </div>
 
       <section>
-        <RunForm action={createRunAction} routes={routes} submitLabel="Save run" />
+        <RunForm
+          action={createRunAction}
+          cancelHref="/running"
+          routes={routes}
+          submitLabel="Save run"
+        />
       </section>
     </div>
   );

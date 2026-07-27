@@ -14,7 +14,11 @@ export default function NewJournalEntryPage() {
       </div>
 
       <section>
-        <JournalEntryForm action={createJournalEntryAction} submitLabel="Save entry" />
+        <JournalEntryForm
+          action={createJournalEntryAction}
+          cancelHref="/journal"
+          submitLabel="Save entry"
+        />
       </section>
     </div>
   );

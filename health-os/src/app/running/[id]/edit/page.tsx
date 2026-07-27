@@ -40,7 +40,13 @@ export default async function EditRunPage({ params }: EditRunPageProps) {
       </div>
 
       <section>
-        <RunForm action={updateRun} routes={routes} run={run} submitLabel="Save run" />
+        <RunForm
+          action={updateRun}
+          cancelHref={`/running/${run.id}`}
+          routes={routes}
+          run={run}
+          submitLabel="Save run"
+        />
       </section>
     </div>
   );

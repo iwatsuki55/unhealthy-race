@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ExternalLink, Pencil } from "lucide-react";
 
 import { deleteRouteAction } from "@/app/routes/actions";
+import { ConfirmDeleteButton } from "@/components/forms/confirm-delete-button";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
 import { secondsToDurationInput } from "@/lib/format";
@@ -109,15 +110,16 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
       </section>
 
       <section className="rounded-lg border border-destructive bg-card p-4">
-        <h2 className="text-sm font-semibold tracking-normal">Delete route</h2>
+        <h2 className="text-sm font-semibold tracking-normal">Delete or deactivate route</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          MVP deletion removes the route. When Running Log is connected, used routes should be
-          deactivated instead of deleted.
+          Unused routes are deleted. Routes with historical runs are deactivated to preserve your
+          training history.
         </p>
         <form action={deleteRoute} className="mt-4">
-          <Button type="submit" variant="outline">
-            Delete route
-          </Button>
+          <ConfirmDeleteButton
+            confirmMessage="Delete this route? If it has linked runs, it will be deactivated instead."
+            label="Delete or deactivate route"
+          />
         </form>
       </section>
     </div>

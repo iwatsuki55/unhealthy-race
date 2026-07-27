@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
 import { deleteGoalAction } from "@/app/goals/actions";
+import { ConfirmDeleteButton } from "@/components/forms/confirm-delete-button";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
@@ -138,9 +139,10 @@ export default async function GoalDetailPage({ params }: GoalDetailPageProps) {
           This removes the manual goal record.
         </p>
         <form action={deleteGoal} className="mt-4">
-          <Button type="submit" variant="outline">
-            Delete goal
-          </Button>
+          <ConfirmDeleteButton
+            confirmMessage="Delete this goal? This cannot be undone."
+            label="Delete goal"
+          />
         </form>
       </section>
     </div>

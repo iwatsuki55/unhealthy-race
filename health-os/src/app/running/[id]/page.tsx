@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ExternalLink, Pencil } from "lucide-react";
 
 import { deleteRunAction } from "@/app/running/actions";
+import { ConfirmDeleteButton } from "@/components/forms/confirm-delete-button";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
 import { secondsToDurationInput } from "@/lib/format";
@@ -154,9 +155,10 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
           This removes the manual running log.
         </p>
         <form action={deleteRun} className="mt-4">
-          <Button type="submit" variant="outline">
-            Delete run
-          </Button>
+          <ConfirmDeleteButton
+            confirmMessage="Delete this run? This cannot be undone."
+            label="Delete run"
+          />
         </form>
       </section>
     </div>

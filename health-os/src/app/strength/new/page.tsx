@@ -14,7 +14,11 @@ export default function NewStrengthSessionPage() {
       </div>
 
       <section>
-        <StrengthSessionForm action={createStrengthSessionAction} submitLabel="Save session" />
+        <StrengthSessionForm
+          action={createStrengthSessionAction}
+          cancelHref="/strength"
+          submitLabel="Save session"
+        />
       </section>
     </div>
   );

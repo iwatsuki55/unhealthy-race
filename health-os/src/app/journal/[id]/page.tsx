@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
 import { deleteJournalEntryAction } from "@/app/journal/actions";
+import { ConfirmDeleteButton } from "@/components/forms/confirm-delete-button";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { journalEntryRepository } from "@/modules/journal/infrastructure";
@@ -105,9 +106,10 @@ export default async function JournalEntryDetailPage({ params }: JournalEntryDet
           This removes the manual journal entry.
         </p>
         <form action={deleteEntry} className="mt-4">
-          <Button type="submit" variant="outline">
-            Delete entry
-          </Button>
+          <ConfirmDeleteButton
+            confirmMessage="Delete this journal entry? This cannot be undone."
+            label="Delete entry"
+          />
         </form>
       </section>
     </div>

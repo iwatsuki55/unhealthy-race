@@ -36,7 +36,12 @@ export default async function EditStrengthSessionPage({ params }: EditStrengthSe
       </div>
 
       <section>
-        <StrengthSessionForm action={updateSession} session={session} submitLabel="Save session" />
+        <StrengthSessionForm
+          action={updateSession}
+          cancelHref={`/strength/${session.id}`}
+          session={session}
+          submitLabel="Save session"
+        />
       </section>
     </div>
   );

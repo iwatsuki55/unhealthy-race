@@ -1,7 +1,8 @@
 "use client";
 
+import { FormActions } from "@/components/forms/form-actions";
 import { TextUnitInput } from "@/components/forms/manual-entry-inputs";
-import { Button } from "@/components/ui/button";
+import { RequiredMark } from "@/components/ui/required-mark";
 import {
   goalModules,
   goalStatuses,
@@ -11,10 +12,16 @@ import {
   type GoalStatus,
   type GoalType
 } from "@/modules/goals/domain";
-import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
+import {
+  formatDateInputValue,
+  metersToKilometersInput,
+  secondsToDurationInput,
+  todayDateInputValue
+} from "@/lib/format";
 
 interface GoalFormProps {
   action: (formData: FormData) => void | Promise<void>;
+  cancelHref: `/goals` | `/goals/${string}`;
   goal?: GoalDto;
   submitLabel: string;
 }
@@ -59,28 +66,20 @@ const statusLabels: Record<GoalStatus, string> = {
   archived: "Archived"
 };
 
-function toDateInputValue(date: Date | null | undefined) {
-  return date ? date.toISOString().slice(0, 10) : "";
-}
-
-function todayInputValue() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function defaultPeriodEndValue() {
   const date = new Date();
   date.setMonth(date.getMonth() + 3);
 
-  return date.toISOString().slice(0, 10);
+  return formatDateInputValue(date);
 }
 
-export function GoalForm({ action, goal, submitLabel }: GoalFormProps) {
+export function GoalForm({ action, cancelHref, goal, submitLabel }: GoalFormProps) {
   return (
     <form action={action} className="grid gap-7">
       <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
         <div className="grid gap-5 md:grid-cols-2">
           <label className={labelClass} htmlFor="goal-title">
-            Title
+            Title <RequiredMark />
             <input
               className={inputClass}
               id="goal-title"
@@ -143,7 +142,7 @@ export function GoalForm({ action, goal, submitLabel }: GoalFormProps) {
           </label>
 
           <label className={labelClass} htmlFor="goal-target-value">
-            Target
+            Target <RequiredMark />
             <TextUnitInput
               id="goal-target-value"
               inputMode="decimal"
@@ -156,7 +155,7 @@ export function GoalForm({ action, goal, submitLabel }: GoalFormProps) {
           </label>
 
           <label className={labelClass} htmlFor="goal-target-unit">
-            Unit
+            Unit <RequiredMark />
             <input
               className={inputClass}
               id="goal-target-unit"
@@ -181,26 +180,26 @@ export function GoalForm({ action, goal, submitLabel }: GoalFormProps) {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <label className={labelClass} htmlFor="goal-period-start">
-              Start
+              Start <RequiredMark />
               <input
                 className={inputClass}
                 id="goal-period-start"
                 name="periodStart"
                 required
                 type="date"
-                defaultValue={toDateInputValue(goal?.periodStart) || todayInputValue()}
+                defaultValue={formatDateInputValue(goal?.periodStart) || todayDateInputValue()}
               />
             </label>
 
             <label className={labelClass} htmlFor="goal-period-end">
-              End
+              End <RequiredMark />
               <input
                 className={inputClass}
                 id="goal-period-end"
                 name="periodEnd"
                 required
                 type="date"
-                defaultValue={toDateInputValue(goal?.periodEnd) || defaultPeriodEndValue()}
+                defaultValue={formatDateInputValue(goal?.periodEnd) || defaultPeriodEndValue()}
               />
             </label>
           </div>
@@ -219,7 +218,7 @@ export function GoalForm({ action, goal, submitLabel }: GoalFormProps) {
               id="goal-race-date"
               name="raceDate"
               type="date"
-              defaultValue={toDateInputValue(goal?.raceDate)}
+              defaultValue={formatDateInputValue(goal?.raceDate)}
             />
           </label>
 
@@ -265,9 +264,7 @@ export function GoalForm({ action, goal, submitLabel }: GoalFormProps) {
       </label>
 
       <div>
-        <Button className="h-11 px-5" type="submit">
-          {submitLabel}
-        </Button>
+        <FormActions cancelHref={cancelHref} submitLabel={submitLabel} />
       </div>
     </form>
   );

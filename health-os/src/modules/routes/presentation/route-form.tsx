@@ -2,12 +2,14 @@ import type { RouteDto } from "@/modules/routes/domain";
 import { difficulties } from "@/core/shared";
 import { surfaceTypes } from "@/modules/routes/domain";
 
+import { FormActions } from "@/components/forms/form-actions";
 import { QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
-import { Button } from "@/components/ui/button";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
 
 interface RouteFormProps {
   action: (formData: FormData) => void | Promise<void>;
+  cancelHref: `/routes` | `/routes/${string}`;
   route?: RouteDto;
   submitLabel: string;
 }
@@ -20,13 +22,13 @@ const textareaClass =
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
 
-export function RouteForm({ action, route, submitLabel }: RouteFormProps) {
+export function RouteForm({ action, cancelHref, route, submitLabel }: RouteFormProps) {
   return (
     <form action={action} className="grid gap-7">
       <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
         <div className="grid gap-5 md:grid-cols-2">
           <label className={labelClass} htmlFor="route-name">
-            Name
+            Name <RequiredMark />
             <input
               className={inputClass}
               id="route-name"
@@ -38,7 +40,7 @@ export function RouteForm({ action, route, submitLabel }: RouteFormProps) {
           </label>
 
           <label className={labelClass} htmlFor="route-distance">
-            Distance
+            Distance <RequiredMark />
             <TextUnitInput
               id="route-distance"
               inputMode="decimal"
@@ -199,9 +201,7 @@ export function RouteForm({ action, route, submitLabel }: RouteFormProps) {
       </details>
 
       <div>
-        <Button className="h-11 px-5" type="submit">
-          {submitLabel}
-        </Button>
+        <FormActions cancelHref={cancelHref} submitLabel={submitLabel} />
       </div>
     </form>
   );

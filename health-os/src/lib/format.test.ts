@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  formatDateInputValue,
   durationInputToSeconds,
   kilometersInputToMeters,
   metersToKilometersInput,
   secondsToDurationInput
 } from "./format.ts";
+import { calculateAveragePaceSecondsPerKm } from "../modules/running/domain/run-calculations.ts";
 
 test("kilometersInputToMeters converts decimal kilometers to integer meters", () => {
   assert.equal(kilometersInputToMeters("3.12"), 3120);
@@ -37,4 +39,15 @@ test("durationInputToSeconds rejects invalid time formats", () => {
 test("secondsToDurationInput uses mm:ss under one hour and hh:mm:ss for longer durations", () => {
   assert.equal(secondsToDurationInput(2100), "35:00");
   assert.equal(secondsToDurationInput(3930), "01:05:30");
+});
+
+test("calculateAveragePaceSecondsPerKm rounds pace from meters and seconds", () => {
+  assert.equal(calculateAveragePaceSecondsPerKm(5000, 1800), 360);
+});
+
+test("formatDateInputValue uses the configured timezone without UTC date shifts", () => {
+  assert.equal(
+    formatDateInputValue(new Date("2026-07-26T15:00:00.000Z"), "Asia/Tokyo"),
+    "2026-07-27"
+  );
 });

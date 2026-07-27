@@ -6,7 +6,9 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { durationInputToSeconds, kilometersInputToMeters } from "@/lib/format";
 import { routeFormSchema } from "@/modules/routes/domain";
+import { shouldDeactivateRouteOnDelete } from "@/modules/routes/domain/route-deletion-policy";
 import { routeRepository } from "@/modules/routes/infrastructure";
+import { runRepository } from "@/modules/running/infrastructure";
 
 function getBoolean(formData: FormData, key: string) {
   return formData.get(key) === "on";
@@ -49,9 +51,17 @@ export async function updateRouteAction(routeId: string, formData: FormData) {
 
 export async function deleteRouteAction(routeId: string) {
   const userId = await getCurrentUserId();
+  const runs = await runRepository.listByUser(userId);
 
-  await routeRepository.delete(userId, routeId);
+  if (shouldDeactivateRouteOnDelete(routeId, runs)) {
+    await routeRepository.update(userId, routeId, { isActive: false });
+  } else {
+    await routeRepository.delete(userId, routeId);
+  }
 
   revalidatePath("/routes");
+  revalidatePath(`/routes/${routeId}`);
+  revalidatePath("/running");
+  revalidatePath("/today");
   redirect("/routes");
 }

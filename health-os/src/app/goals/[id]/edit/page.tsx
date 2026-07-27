@@ -36,7 +36,12 @@ export default async function EditGoalPage({ params }: EditGoalPageProps) {
       </div>
 
       <section>
-        <GoalForm action={updateGoal} goal={goal} submitLabel="Save goal" />
+        <GoalForm
+          action={updateGoal}
+          cancelHref={`/goals/${goal.id}`}
+          goal={goal}
+          submitLabel="Save goal"
+        />
       </section>
     </div>
   );

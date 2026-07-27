@@ -36,7 +36,12 @@ export default async function EditRoutePage({ params }: EditRoutePageProps) {
       </div>
 
       <section>
-        <RouteForm action={updateRoute} route={route} submitLabel="Save route" />
+        <RouteForm
+          action={updateRoute}
+          cancelHref={`/routes/${route.id}`}
+          route={route}
+          submitLabel="Save route"
+        />
       </section>
     </div>
   );

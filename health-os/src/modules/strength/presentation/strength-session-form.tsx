@@ -3,14 +3,17 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+import { FormActions } from "@/components/forms/form-actions";
 import { TextUnitInput } from "@/components/forms/manual-entry-inputs";
 import { Button } from "@/components/ui/button";
-import { secondsToDurationInput } from "@/lib/format";
+import { RequiredMark } from "@/components/ui/required-mark";
+import { formatDateInputValue, secondsToDurationInput } from "@/lib/format";
 import type { StrengthSessionDto } from "@/modules/strength/domain";
 import { equipmentTypes, workoutTypes } from "@/modules/strength/domain";
 
 interface StrengthSessionFormProps {
   action: (formData: FormData) => void | Promise<void>;
+  cancelHref: `/strength` | `/strength/${string}`;
   session?: StrengthSessionDto;
   submitLabel: string;
 }
@@ -38,10 +41,6 @@ const textareaClass =
   "min-h-24 w-full rounded-md border border-input bg-background px-3 py-3 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring sm:text-sm";
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
-
-function toDateInputValue(date: Date | undefined) {
-  return date ? date.toISOString().slice(0, 10) : "";
-}
 
 function toDateTimeLocalValue(date: Date | null | undefined) {
   return date ? date.toISOString().slice(0, 16) : "";
@@ -87,7 +86,12 @@ function toDraftExercises(session: StrengthSessionDto | undefined): DraftExercis
   }));
 }
 
-export function StrengthSessionForm({ action, session, submitLabel }: StrengthSessionFormProps) {
+export function StrengthSessionForm({
+  action,
+  cancelHref,
+  session,
+  submitLabel
+}: StrengthSessionFormProps) {
   const [exercises, setExercises] = useState<DraftExercise[]>(() => toDraftExercises(session));
 
   function updateExercise(index: number, nextExercise: Partial<DraftExercise>) {
@@ -118,14 +122,14 @@ export function StrengthSessionForm({ action, session, submitLabel }: StrengthSe
       <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
         <div className="grid gap-5 md:grid-cols-2">
           <label className={labelClass} htmlFor="strength-date">
-            Date
+            Date <RequiredMark />
             <input
               className={inputClass}
               id="strength-date"
               name="sessionDate"
               required
               type="date"
-              defaultValue={toDateInputValue(session?.sessionDate)}
+              defaultValue={formatDateInputValue(session?.sessionDate)}
             />
           </label>
 
@@ -219,7 +223,7 @@ export function StrengthSessionForm({ action, session, submitLabel }: StrengthSe
 
             <div className="grid gap-5 md:grid-cols-2">
               <label className={labelClass} htmlFor={`exercise-name-${exerciseIndex}`}>
-                Exercise
+                Exercise <RequiredMark />
                 <input
                   className={inputClass}
                   id={`exercise-name-${exerciseIndex}`}
@@ -265,7 +269,7 @@ export function StrengthSessionForm({ action, session, submitLabel }: StrengthSe
                     Set {setIndex + 1}
                   </p>
                   <label className={labelClass} htmlFor={`reps-${exerciseIndex}-${setIndex}`}>
-                    Reps
+                    Reps <RequiredMark />
                     <input
                       className={inputClass}
                       id={`reps-${exerciseIndex}-${setIndex}`}
@@ -402,9 +406,7 @@ export function StrengthSessionForm({ action, session, submitLabel }: StrengthSe
       </label>
 
       <div>
-        <Button className="h-11 px-5" type="submit">
-          {submitLabel}
-        </Button>
+        <FormActions cancelHref={cancelHref} submitLabel={submitLabel} />
       </div>
     </form>
   );

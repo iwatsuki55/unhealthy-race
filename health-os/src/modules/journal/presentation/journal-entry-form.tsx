@@ -1,11 +1,14 @@
 "use client";
 
+import { FormActions } from "@/components/forms/form-actions";
 import { TextUnitInput } from "@/components/forms/manual-entry-inputs";
-import { Button } from "@/components/ui/button";
+import { RequiredMark } from "@/components/ui/required-mark";
+import { formatDateInputValue, todayDateInputValue } from "@/lib/format";
 import type { JournalEntryDto } from "@/modules/journal/domain";
 
 interface JournalEntryFormProps {
   action: (formData: FormData) => void | Promise<void>;
+  cancelHref: `/journal` | `/journal/${string}`;
   entry?: JournalEntryDto;
   submitLabel: string;
 }
@@ -18,28 +21,25 @@ const textareaClass =
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
 
-function toDateInputValue(date: Date | undefined) {
-  return date ? date.toISOString().slice(0, 10) : "";
-}
-
-function todayInputValue() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export function JournalEntryForm({ action, entry, submitLabel }: JournalEntryFormProps) {
+export function JournalEntryForm({
+  action,
+  cancelHref,
+  entry,
+  submitLabel
+}: JournalEntryFormProps) {
   return (
     <form action={action} className="grid gap-7">
       <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
         <div className="grid gap-5 md:grid-cols-2">
           <label className={labelClass} htmlFor="journal-date">
-            Date
+            Date <RequiredMark />
             <input
               className={inputClass}
               id="journal-date"
               name="entryDate"
               required
               type="date"
-              defaultValue={toDateInputValue(entry?.entryDate) || todayInputValue()}
+              defaultValue={formatDateInputValue(entry?.entryDate) || todayDateInputValue()}
             />
           </label>
 
@@ -56,7 +56,7 @@ export function JournalEntryForm({ action, entry, submitLabel }: JournalEntryFor
         </div>
 
         <label className={labelClass} htmlFor="journal-body">
-          Notes
+          Notes <RequiredMark />
           <textarea
             className={textareaClass}
             id="journal-body"
@@ -164,9 +164,7 @@ export function JournalEntryForm({ action, entry, submitLabel }: JournalEntryFor
       </section>
 
       <div>
-        <Button className="h-11 px-5" type="submit">
-          {submitLabel}
-        </Button>
+        <FormActions cancelHref={cancelHref} submitLabel={submitLabel} />
       </div>
     </form>
   );

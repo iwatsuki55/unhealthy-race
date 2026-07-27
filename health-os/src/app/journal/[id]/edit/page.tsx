@@ -36,7 +36,12 @@ export default async function EditJournalEntryPage({ params }: EditJournalEntryP
       </div>
 
       <section>
-        <JournalEntryForm action={updateEntry} entry={entry} submitLabel="Save entry" />
+        <JournalEntryForm
+          action={updateEntry}
+          cancelHref={`/journal/${entry.id}`}
+          entry={entry}
+          submitLabel="Save entry"
+        />
       </section>
     </div>
   );
