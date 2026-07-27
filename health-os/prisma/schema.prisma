@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String            @id @default(cuid())
+  email          String            @unique
+  displayName    String
+  timezone       String            @default("Asia/Tokyo")
+  unitSystem     UnitSystem        @default(metric)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  routes         Route[]
+  runs           Run[]
+  strengthLogs   StrengthSession[]
+  goals          Goal[]
+  journalEntries JournalEntry[]
+
+  @@map("users")
+}
+
+model Route {
+  id                       String      @id @default(cuid())
+  userId                   String
+  name                     String
+  distanceMeters           Int
+  estimatedDurationSeconds Int?
+  elevationGainMeters      Int?
+  description              String?
+  surfaceType              SurfaceType @default(unknown)
+  difficulty               Difficulty  @default(moderate)
+  googleMapsUrl            String?
+  isFavorite               Boolean     @default(false)
+  isActive                 Boolean     @default(true)
+  notes                    String?
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+  user                     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs                     Run[]
+
+  @@index([userId])
+  @@map("routes")
+}
+
+model Run {
+  id                         String    @id @default(cuid())
+  userId                     String
+  routeId                    String?
+  runDate                    DateTime
+  startedAt                  DateTime?
+  durationSeconds            Int
+  distanceMeters             Int
+  averagePaceSecondsPerKm    Int
+  averageHeartRate           Int?
+  maximumHeartRate           Int?
+  cadenceStepsPerMinute      Int?
+  calories                   Int?
+  temperatureCelsius         Float?
+  humidityPercent            Int?
+  shoes                      String?
+  screenshotAttachmentRef    String?
+  perceivedEffort            Int?
+  notes                      String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route                      Route?    @relation(fields: [routeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, runDate])
+  @@index([routeId])
+  @@map("runs")
+}
+
+model StrengthSession {
+  id              String             @id @default(cuid())
+  userId          String
+  sessionDate     DateTime
+  startedAt       DateTime?
+  durationSeconds Int?
+  workoutType     WorkoutType
+  location        String?
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises       StrengthExercise[]
+
+  @@index([userId, sessionDate])
+  @@map("strength_sessions")
+}
+
+model StrengthExercise {
+  id             String          @id @default(cuid())
+  sessionId      String
+  exerciseName   String
+  exerciseOrder  Int
+  equipmentType  EquipmentType
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  session        StrengthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sets           StrengthSet[]
+
+  @@index([sessionId])
+  @@map("strength_exercises")
+}
+
+model StrengthSet {
+  id              String           @id @default(cuid())
+  exerciseId      String
+  setOrder        Int
+  reps            Int
+  weightValue     Float?
+  weightUnit      WeightUnit       @default(kg)
+  restSeconds     Int?
+  perceivedEffort Int?
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  exercise        StrengthExercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([exerciseId])
+  @@map("strength_sets")
+}
+
+model Goal {
+  id                    String     @id @default(cuid())
+  userId                String
+  title                 String
+  module                GoalModule
+  goalType              GoalType
+  targetValue           Float
+  targetUnit            String
+  currentValue          Float?
+  raceDate              DateTime?
+  raceDistanceMeters    Int?
+  raceTargetTimeSeconds Int?
+  periodStart           DateTime
+  periodEnd             DateTime
+  status                GoalStatus @default(active)
+  notes                 String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, module])
+  @@map("goals")
+}
+
+model JournalEntry {
+  id                String   @id @default(cuid())
+  userId            String
+  entryDate         DateTime
+  moodRating        Int?
+  fatigueRating     Int?
+  recoveryRating    Int?
+  workStressRating  Int?
+  alcoholNote       String?
+  saunaNote         String?
+  tagsJson          String?
+  body              String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, entryDate])
+  @@map("journal_entries")
+}
+
+enum UnitSystem {
+  metric
+  imperial
+}
+
+enum SurfaceType {
+  road
+  trail
+  track
+  treadmill
+  mixed
+  unknown
+}
+
+enum Difficulty {
+  easy
+  moderate
+  hard
+}
+
+enum WorkoutType {
+  full_body
+  upper
+  lower
+  push
+  pull
+  legs
+}
+
+enum EquipmentType {
+  machine
+  free_weight
+  bodyweight
+}
+
+enum GoalModule {
+  running
+  strength
+  weight
+  body_fat
+  race
+  health
+  general
+}
+
+enum GoalType {
+  running_distance
+  running_frequency
+  pace
+  race_completion
+  race_time
+  strength_frequency
+  weight_target
+  weight_change
+  body_fat_target
+  body_fat_change
+  custom_health
+  custom
+}
+
+enum GoalStatus {
+  active
+  completed
+  paused
+  archived
+}
+
+enum WeightUnit {
+  kg
+  lb
+}
