@@ -21,3 +21,18 @@ export async function getCurrentUserId() {
 
   return user.id;
 }
+
+export async function getCurrentUser() {
+  return prisma.user.upsert({
+    where: {
+      email: MVP_USER_EMAIL
+    },
+    update: {},
+    create: {
+      email: MVP_USER_EMAIL,
+      displayName: "Health OS Owner",
+      timezone: "Asia/Tokyo",
+      unitSystem: "metric"
+    }
+  });
+}
