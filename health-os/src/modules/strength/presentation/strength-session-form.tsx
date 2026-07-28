@@ -42,8 +42,34 @@ const textareaClass =
 
 const labelClass = "grid gap-2 text-sm font-medium text-muted-foreground";
 
+const exercisePresets: Array<{
+  equipmentType: DraftExercise["equipmentType"];
+  name: string;
+}> = [
+  { name: "Bench Press", equipmentType: "free_weight" },
+  { name: "Squat", equipmentType: "free_weight" },
+  { name: "Deadlift", equipmentType: "free_weight" },
+  { name: "Shoulder Press", equipmentType: "free_weight" },
+  { name: "Pull Up", equipmentType: "bodyweight" },
+  { name: "Push Up", equipmentType: "bodyweight" },
+  { name: "Lat Pulldown", equipmentType: "machine" },
+  { name: "Seated Row", equipmentType: "machine" },
+  { name: "Leg Press", equipmentType: "machine" },
+  { name: "Leg Extension", equipmentType: "machine" },
+  { name: "Leg Curl", equipmentType: "machine" },
+  { name: "Biceps Curl", equipmentType: "free_weight" },
+  { name: "Triceps Pushdown", equipmentType: "machine" },
+  { name: "Plank", equipmentType: "bodyweight" }
+];
+
 function toDateTimeLocalValue(date: Date | null | undefined) {
   return date ? date.toISOString().slice(0, 16) : "";
+}
+
+function normalizeIntegerInput(value: string) {
+  return value
+    .replace(/[０-９]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) - 0xfee0))
+    .replace(/\D/g, "");
 }
 
 function createEmptySet(): DraftSet {
@@ -221,6 +247,7 @@ export function StrengthSessionForm({
                 Exercise <RequiredMark />
                 <input
                   className={inputClass}
+                  list="strength-exercise-presets"
                   id={`exercise-name-${exerciseIndex}`}
                   name={`exerciseName_${exerciseIndex}`}
                   placeholder="Bench Press"
@@ -254,6 +281,27 @@ export function StrengthSessionForm({
               </label>
             </div>
 
+            <div
+              className="flex flex-wrap gap-2"
+              aria-label={`Exercise ${exerciseIndex + 1} quick picks`}
+            >
+              {exercisePresets.slice(0, 10).map((preset) => (
+                <button
+                  className="h-8 rounded-md border border-border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  key={preset.name}
+                  type="button"
+                  onClick={() =>
+                    updateExercise(exerciseIndex, {
+                      exerciseName: preset.name,
+                      equipmentType: preset.equipmentType
+                    })
+                  }
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+
             <div className="grid gap-3">
               {exercise.sets.map((set, setIndex) => (
                 <div
@@ -270,13 +318,14 @@ export function StrengthSessionForm({
                       id={`reps-${exerciseIndex}-${setIndex}`}
                       inputMode="numeric"
                       name={`reps_${exerciseIndex}_${setIndex}`}
-                      pattern="^\\d+$"
                       placeholder="8"
                       required
                       type="text"
                       value={set.reps}
                       onChange={(event) =>
-                        updateSet(exerciseIndex, setIndex, { reps: event.currentTarget.value })
+                        updateSet(exerciseIndex, setIndex, {
+                          reps: normalizeIntegerInput(event.currentTarget.value)
+                        })
                       }
                     />
                   </label>
@@ -320,13 +369,15 @@ export function StrengthSessionForm({
                       id={`rpe-${exerciseIndex}-${setIndex}`}
                       inputMode="numeric"
                       name={`perceivedEffort_${exerciseIndex}_${setIndex}`}
-                      pattern="^([1-9]|10)$"
                       placeholder="7"
                       type="text"
                       value={set.perceivedEffort}
                       onChange={(event) =>
                         updateSet(exerciseIndex, setIndex, {
-                          perceivedEffort: event.currentTarget.value
+                          perceivedEffort: normalizeIntegerInput(event.currentTarget.value).slice(
+                            0,
+                            2
+                          )
                         })
                       }
                     />
@@ -403,6 +454,12 @@ export function StrengthSessionForm({
       <div>
         <FormActions cancelHref={cancelHref} submitLabel={submitLabel} />
       </div>
+
+      <datalist id="strength-exercise-presets">
+        {exercisePresets.map((preset) => (
+          <option key={preset.name} value={preset.name} />
+        ))}
+      </datalist>
     </form>
   );
 }
