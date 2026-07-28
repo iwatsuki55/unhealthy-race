@@ -58,6 +58,133 @@ export function DurationInput({
   );
 }
 
+function splitDurationInput(value: string | undefined) {
+  const normalized = value ? normalizeDurationInput(value) : "";
+
+  if (!normalized) {
+    return { hours: "", minutes: "", seconds: "" };
+  }
+
+  const parts = normalized.split(":");
+
+  if (parts.length === 3) {
+    return {
+      hours: Number(parts[0]).toString(),
+      minutes: Number(parts[1]).toString(),
+      seconds: Number(parts[2]).toString()
+    };
+  }
+
+  return {
+    hours: "",
+    minutes: Number(parts[0]).toString(),
+    seconds: Number(parts[1]).toString()
+  };
+}
+
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function buildDurationValue(hours: string, minutes: string, seconds: string) {
+  if (!hours && !minutes && !seconds) {
+    return "";
+  }
+
+  const normalizedHours = hours ? Number(hours) : 0;
+  const normalizedMinutes = minutes ? Number(minutes) : 0;
+  const normalizedSeconds = seconds ? Number(seconds) : 0;
+
+  if (normalizedHours > 0) {
+    return [
+      normalizedHours,
+      normalizedMinutes.toString().padStart(2, "0"),
+      normalizedSeconds.toString().padStart(2, "0")
+    ].join(":");
+  }
+
+  return `${normalizedMinutes}:${normalizedSeconds.toString().padStart(2, "0")}`;
+}
+
+export function SplitDurationInput({
+  defaultValue,
+  idPrefix,
+  name
+}: {
+  defaultValue?: string;
+  idPrefix: string;
+  name: string;
+}) {
+  const initialValue = splitDurationInput(defaultValue);
+  const [hours, setHours] = useState(initialValue.hours);
+  const [minutes, setMinutes] = useState(initialValue.minutes);
+  const [seconds, setSeconds] = useState(initialValue.seconds);
+  const compactInputClass =
+    "h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring sm:text-sm";
+
+  return (
+    <div className="grid gap-2">
+      <input name={name} type="hidden" value={buildDurationValue(hours, minutes, seconds)} />
+      <div className="grid grid-cols-3 gap-2">
+        <label
+          className="grid gap-1 text-xs font-medium text-muted-foreground"
+          htmlFor={`${idPrefix}-hours`}
+        >
+          Hours
+          <input
+            className={compactInputClass}
+            id={`${idPrefix}-hours`}
+            inputMode="numeric"
+            maxLength={3}
+            pattern="\d*"
+            placeholder="0"
+            type="text"
+            value={hours}
+            onChange={(event) => setHours(onlyDigits(event.currentTarget.value).slice(0, 3))}
+            onFocus={(event) => event.currentTarget.select()}
+          />
+        </label>
+        <label
+          className="grid gap-1 text-xs font-medium text-muted-foreground"
+          htmlFor={`${idPrefix}-minutes`}
+        >
+          Min
+          <input
+            className={compactInputClass}
+            id={`${idPrefix}-minutes`}
+            inputMode="numeric"
+            maxLength={2}
+            pattern="\d*"
+            placeholder="45"
+            type="text"
+            value={minutes}
+            onChange={(event) => setMinutes(onlyDigits(event.currentTarget.value).slice(0, 2))}
+            onFocus={(event) => event.currentTarget.select()}
+          />
+        </label>
+        <label
+          className="grid gap-1 text-xs font-medium text-muted-foreground"
+          htmlFor={`${idPrefix}-seconds`}
+        >
+          Sec
+          <input
+            className={compactInputClass}
+            id={`${idPrefix}-seconds`}
+            inputMode="numeric"
+            maxLength={2}
+            pattern="\d*"
+            placeholder="00"
+            type="text"
+            value={seconds}
+            onChange={(event) => setSeconds(onlyDigits(event.currentTarget.value).slice(0, 2))}
+            onFocus={(event) => event.currentTarget.select()}
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 interface QuickFillGroupProps {
   label: string;
   targetId: string;

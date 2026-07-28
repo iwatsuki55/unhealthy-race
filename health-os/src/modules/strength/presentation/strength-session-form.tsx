@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { FormActions } from "@/components/forms/form-actions";
-import { DurationInput, TextUnitInput } from "@/components/forms/manual-entry-inputs";
+import { SplitDurationInput, TextUnitInput } from "@/components/forms/manual-entry-inputs";
 import { Button } from "@/components/ui/button";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { formatDateInputValue, secondsToDurationInput } from "@/lib/format";
@@ -160,15 +160,14 @@ export function StrengthSessionForm({
             />
           </label>
 
-          <label className={labelClass} htmlFor="strength-duration">
-            Duration
-            <DurationInput
-              id="strength-duration"
+          <div className={labelClass}>
+            <span>Duration</span>
+            <SplitDurationInput
+              idPrefix="strength-duration"
               name="duration"
-              placeholder="4500"
               defaultValue={secondsToDurationInput(session?.durationSeconds)}
             />
-          </label>
+          </div>
         </div>
 
         <label className={labelClass} htmlFor="strength-location">
