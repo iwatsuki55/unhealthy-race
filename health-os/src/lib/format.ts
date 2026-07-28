@@ -130,12 +130,13 @@ export function durationInputToSeconds(value: FormDataEntryValue | null) {
   }
 
   const trimmed = value.trim();
+  const normalized = normalizeDurationInput(trimmed);
 
-  if (!/^(?:\d+:)?[0-5]?\d:[0-5]\d$/.test(trimmed)) {
+  if (!normalized) {
     return value;
   }
 
-  const parts = trimmed.split(":").map(Number);
+  const parts = normalized.split(":").map(Number);
 
   if (parts.some((part) => !Number.isFinite(part))) {
     return value;
@@ -152,4 +153,47 @@ export function durationInputToSeconds(value: FormDataEntryValue | null) {
   }
 
   return value;
+}
+
+export function normalizeDurationInput(value: string) {
+  const trimmed = value.trim();
+
+  if (trimmed === "") {
+    return "";
+  }
+
+  if (/^(?:\d+:)?[0-5]?\d:[0-5]\d$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (!/^\d{1,6}$/.test(trimmed)) {
+    return null;
+  }
+
+  if (trimmed.length <= 2) {
+    return `${Number(trimmed)}:00`;
+  }
+
+  const padded = trimmed.padStart(trimmed.length <= 4 ? 4 : 6, "0");
+
+  if (padded.length === 4) {
+    const minutes = Number(padded.slice(0, 2));
+    const seconds = Number(padded.slice(2, 4));
+
+    if (seconds >= 60) {
+      return null;
+    }
+
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  const hours = Number(padded.slice(0, 2));
+  const minutes = Number(padded.slice(2, 4));
+  const seconds = Number(padded.slice(4, 6));
+
+  if (minutes >= 60 || seconds >= 60) {
+    return null;
+  }
+
+  return [hours, minutes, seconds].map((part) => part.toString().padStart(2, "0")).join(":");
 }

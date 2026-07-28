@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { FormActions } from "@/components/forms/form-actions";
-import { TextUnitInput } from "@/components/forms/manual-entry-inputs";
+import { DurationInput, TextUnitInput } from "@/components/forms/manual-entry-inputs";
 import { Button } from "@/components/ui/button";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { formatDateInputValue, secondsToDurationInput } from "@/lib/format";
@@ -162,14 +162,10 @@ export function StrengthSessionForm({
 
           <label className={labelClass} htmlFor="strength-duration">
             Duration
-            <TextUnitInput
+            <DurationInput
               id="strength-duration"
-              inputMode="numeric"
               name="duration"
-              pattern="^(?:\d+:)?[0-5]?\d:[0-5]\d$"
-              placeholder="45:00"
-              title="Use mm:ss, such as 45:00, or hh:mm:ss, such as 01:05:30."
-              unit="hh:mm:ss"
+              placeholder="4500"
               defaultValue={secondsToDurationInput(session?.durationSeconds)}
             />
           </label>

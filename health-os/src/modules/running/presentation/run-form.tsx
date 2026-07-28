@@ -2,7 +2,12 @@ import type { RouteDto } from "@/modules/routes/domain";
 import type { RunDto } from "@/modules/running/domain";
 
 import { FormActions } from "@/components/forms/form-actions";
-import { PacePreview, QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
+import {
+  DurationInput,
+  PacePreview,
+  QuickFillGroup,
+  TextUnitInput
+} from "@/components/forms/manual-entry-inputs";
 import { RequiredMark } from "@/components/ui/required-mark";
 import {
   formatDateInputValue,
@@ -73,15 +78,11 @@ export function RunForm({ action, cancelHref, routes, run, submitLabel }: RunFor
 
           <label className={labelClass} htmlFor="run-duration">
             Duration <RequiredMark />
-            <TextUnitInput
+            <DurationInput
               id="run-duration"
-              inputMode="numeric"
               name="duration"
-              pattern="^(?:\d+:)?[0-5]?\d:[0-5]\d$"
-              placeholder="35:00"
+              placeholder="3500"
               required
-              title="Use mm:ss, such as 35:00, or hh:mm:ss, such as 01:05:30."
-              unit="hh:mm:ss"
               defaultValue={secondsToDurationInput(run?.durationSeconds)}
             />
             <QuickFillGroup

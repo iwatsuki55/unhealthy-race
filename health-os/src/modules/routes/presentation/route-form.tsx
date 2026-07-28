@@ -3,7 +3,7 @@ import { difficulties } from "@/core/shared";
 import { surfaceTypes } from "@/modules/routes/domain";
 
 import { FormActions } from "@/components/forms/form-actions";
-import { QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
+import { DurationInput, QuickFillGroup, TextUnitInput } from "@/components/forms/manual-entry-inputs";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { metersToKilometersInput, secondsToDurationInput } from "@/lib/format";
 
@@ -74,14 +74,10 @@ export function RouteForm({ action, cancelHref, route, submitLabel }: RouteFormP
           <div className="grid gap-5 md:grid-cols-2">
             <label className={labelClass} htmlFor="route-estimated-time">
               Estimated Time
-              <TextUnitInput
+              <DurationInput
                 id="route-estimated-time"
-                inputMode="numeric"
                 name="estimatedDuration"
-                pattern="^(?:\d+:)?[0-5]?\d:[0-5]\d$"
-                placeholder="35:00"
-                title="Use mm:ss, such as 35:00, or hh:mm:ss, such as 01:05:30."
-                unit="hh:mm:ss"
+                placeholder="3500"
                 defaultValue={secondsToDurationInput(route?.estimatedDurationSeconds)}
               />
               <QuickFillGroup

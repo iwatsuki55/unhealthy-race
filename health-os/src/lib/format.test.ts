@@ -6,6 +6,7 @@ import {
   durationInputToSeconds,
   kilometersInputToMeters,
   metersToKilometersInput,
+  normalizeDurationInput,
   secondsToDurationInput
 } from "./format.ts";
 import { calculateAveragePaceSecondsPerKm } from "../modules/running/domain/run-calculations.ts";
@@ -30,10 +31,24 @@ test("durationInputToSeconds accepts mm:ss and hh:mm:ss", () => {
   assert.equal(durationInputToSeconds("01:05:30"), 3930);
 });
 
+test("durationInputToSeconds accepts compact mobile-friendly digits", () => {
+  assert.equal(durationInputToSeconds("35"), 2100);
+  assert.equal(durationInputToSeconds("3500"), 2100);
+  assert.equal(durationInputToSeconds("10530"), 3930);
+});
+
 test("durationInputToSeconds rejects invalid time formats", () => {
-  assert.equal(durationInputToSeconds("35"), "35");
+  assert.equal(durationInputToSeconds("3599"), "3599");
   assert.equal(durationInputToSeconds("35:99"), "35:99");
   assert.equal(durationInputToSeconds("01:75:30"), "01:75:30");
+});
+
+test("normalizeDurationInput formats compact mobile-friendly digits", () => {
+  assert.equal(normalizeDurationInput("35"), "35:00");
+  assert.equal(normalizeDurationInput("930"), "9:30");
+  assert.equal(normalizeDurationInput("3500"), "35:00");
+  assert.equal(normalizeDurationInput("10530"), "01:05:30");
+  assert.equal(normalizeDurationInput("3599"), null);
 });
 
 test("secondsToDurationInput uses mm:ss under one hour and hh:mm:ss for longer durations", () => {

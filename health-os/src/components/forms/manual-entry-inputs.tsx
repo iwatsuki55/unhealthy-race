@@ -3,6 +3,8 @@
 import type { InputHTMLAttributes } from "react";
 import { useEffect, useState } from "react";
 
+import { normalizeDurationInput } from "@/lib/format";
+
 type TextUnitInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
   id: string;
   name: string;
@@ -27,6 +29,32 @@ export function TextUnitInput({ id, name, unit, onFocus, ...props }: TextUnitInp
         {unit}
       </span>
     </div>
+  );
+}
+
+export function DurationInput({
+  onBlur,
+  title = "Use mm:ss, hh:mm:ss, or compact digits such as 3500 for 35:00.",
+  ...props
+}: Omit<TextUnitInputProps, "inputMode" | "pattern" | "unit">) {
+  return (
+    <TextUnitInput
+      inputMode="numeric"
+      pattern="^(?:(?:\\d+:)?[0-5]?\\d:[0-5]\\d|\\d{1,6})$"
+      title={title}
+      unit="mm:ss"
+      onBlur={(event) => {
+        const normalized = normalizeDurationInput(event.currentTarget.value);
+
+        if (normalized) {
+          event.currentTarget.value = normalized;
+          event.currentTarget.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        onBlur?.(event);
+      }}
+      {...props}
+    />
   );
 }
 
@@ -75,13 +103,13 @@ function parseDistanceKm(value: string) {
 }
 
 function parseDurationSeconds(value: string) {
-  const trimmed = value.trim();
+  const normalized = normalizeDurationInput(value);
 
-  if (!/^(?:\d+:)?[0-5]?\d:[0-5]\d$/.test(trimmed)) {
+  if (!normalized) {
     return null;
   }
 
-  const parts = trimmed.split(":").map(Number);
+  const parts = normalized.split(":").map(Number);
 
   if (parts.length === 2) {
     const [minutes, seconds] = parts;
