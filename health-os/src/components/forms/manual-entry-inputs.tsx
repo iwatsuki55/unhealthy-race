@@ -83,7 +83,9 @@ function splitDurationInput(value: string | undefined) {
 }
 
 function onlyDigits(value: string) {
-  return value.replace(/\D/g, "");
+  return value
+    .replace(/[０-９]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) - 0xfee0))
+    .replace(/\D/g, "");
 }
 
 function buildDurationValue(hours: string, minutes: string, seconds: string) {
@@ -136,7 +138,6 @@ export function SplitDurationInput({
             id={`${idPrefix}-hours`}
             inputMode="numeric"
             maxLength={3}
-            pattern="\d*"
             placeholder="0"
             type="text"
             value={hours}
@@ -154,7 +155,6 @@ export function SplitDurationInput({
             id={`${idPrefix}-minutes`}
             inputMode="numeric"
             maxLength={2}
-            pattern="\d*"
             placeholder="45"
             type="text"
             value={minutes}
@@ -172,7 +172,6 @@ export function SplitDurationInput({
             id={`${idPrefix}-seconds`}
             inputMode="numeric"
             maxLength={2}
-            pattern="\d*"
             placeholder="00"
             type="text"
             value={seconds}

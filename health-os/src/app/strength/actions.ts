@@ -18,6 +18,10 @@ function getString(formData: FormData, key: string) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function normalizeNumericString(value: string) {
+  return value.replace(/[０-９]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) - 0xfee0));
+}
+
 function getNumber(formData: FormData, key: string) {
   const value = getString(formData, key);
 
@@ -25,7 +29,7 @@ function getNumber(formData: FormData, key: string) {
     return undefined;
   }
 
-  const numberValue = Number(value);
+  const numberValue = Number(normalizeNumericString(value));
 
   return Number.isFinite(numberValue) ? numberValue : undefined;
 }
