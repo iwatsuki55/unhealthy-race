@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { WorkoutImportClient } from "@/modules/workout-import/presentation/workout-import-client";
+import { WorkoutImportLoader } from "@/modules/workout-import/presentation";
 
 export default function NewWorkoutImportPage() {
   return (
@@ -16,7 +16,7 @@ export default function NewWorkoutImportPage() {
         </p>
       </div>
 
-      <WorkoutImportClient />
+      <WorkoutImportLoader />
     </div>
   );
 }

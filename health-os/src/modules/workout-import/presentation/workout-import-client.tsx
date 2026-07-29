@@ -218,10 +218,17 @@ export function WorkoutImportClient() {
   const [viewerImage, setViewerImage] = useState<ImportedImage | null>(null);
   const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const draftRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(toStoredSession(session)));
   }, [session]);
+
+  useEffect(() => {
+    if (session.status === "review_required") {
+      draftRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [session.status]);
 
   const remainingSlots = maxImages - session.images.length;
   const canAnalyze = session.images.length > 0 && session.status !== "analyzing";
@@ -351,8 +358,25 @@ export function WorkoutImportClient() {
               {session.status === "analyzing" ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               ) : null}
-              Analyze
+              {session.status === "analyzing" ? "Analyzing..." : "Analyze"}
             </Button>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-4" aria-live="polite">
+            {session.status === "analyzing" ? (
+              <div className="flex items-center gap-3 text-sm font-medium text-foreground">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+                Creating a review draft from {session.images.length} screenshots...
+              </div>
+            ) : session.status === "review_required" ? (
+              <p className="text-sm font-medium text-foreground">
+                Draft ready. Review the extracted workout below before saving.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Tap Analyze to create a mock review draft for this import session.
+              </p>
+            )}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -453,7 +477,11 @@ export function WorkoutImportClient() {
         </section>
       ) : null}
 
-      {session.extractionResult ? <DraftReview draft={session.extractionResult} /> : null}
+      {session.extractionResult ? (
+        <section ref={draftRef}>
+          <DraftReview draft={session.extractionResult} />
+        </section>
+      ) : null}
 
       <section className="rounded-lg border border-border bg-card p-4 text-sm leading-6 text-muted-foreground">
         <h2 className="font-semibold tracking-normal text-foreground">Image retention policy</h2>
