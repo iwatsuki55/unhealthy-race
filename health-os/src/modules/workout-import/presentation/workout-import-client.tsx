@@ -3,7 +3,7 @@
 import { ArrowDown, ArrowUp, Eye, ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -217,7 +217,11 @@ export function WorkoutImportClient() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [viewerImage, setViewerImage] = useState<ImportedImage | null>(null);
   const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
+  const [pasteMessage, setPasteMessage] = useState(
+    "Tap here, then paste screenshots from the clipboard."
+  );
   const inputRef = useRef<HTMLInputElement>(null);
+  const pasteRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -234,12 +238,15 @@ export function WorkoutImportClient() {
   const canAnalyze = session.images.length > 0 && session.status !== "analyzing";
   const orderedImageIds = useMemo(() => session.images.map((image) => image.id), [session.images]);
 
-  function handleFiles(files: FileList | File[]) {
+  function handleFiles(files: FileList | File[], source: "picker" | "paste" | "drop" = "picker") {
     const imageFiles = Array.from(files)
       .filter((file) => file.type.startsWith("image/") || /\.(heic|heif)$/i.test(file.name))
       .slice(0, Math.max(remainingSlots, 0));
 
     if (imageFiles.length === 0) {
+      if (source === "paste") {
+        setPasteMessage("No image was found in the pasted content.");
+      }
       return;
     }
 
@@ -255,13 +262,33 @@ export function WorkoutImportClient() {
 
     setUploadProgress(70);
     setSession((current) => addImagesToImportSession(current, images));
+    if (source === "paste") {
+      setPasteMessage(
+        `${imageFiles.length} pasted screenshot${imageFiles.length === 1 ? "" : "s"} added.`
+      );
+    }
     setUploadProgress(100);
     window.setTimeout(() => setUploadProgress(0), 700);
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
-    handleFiles(event.dataTransfer.files);
+    handleFiles(event.dataTransfer.files, "drop");
+  }
+
+  function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
+    const filesFromList = Array.from(event.clipboardData.files);
+    const filesFromItems = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+    const files = filesFromList.length > 0 ? filesFromList : filesFromItems;
+
+    if (files.length > 0) {
+      event.preventDefault();
+    }
+
+    handleFiles(files, "paste");
   }
 
   function analyze() {
@@ -333,6 +360,30 @@ export function WorkoutImportClient() {
             <ImagePlus className="h-4 w-4" aria-hidden="true" />
             Add more
           </Button>
+          <Button
+            className="h-12"
+            type="button"
+            variant="outline"
+            onClick={() => pasteRef.current?.focus()}
+          >
+            Paste screenshots
+          </Button>
+        </div>
+
+        <div
+          aria-label="Paste screenshots here"
+          className="min-h-20 rounded-lg border border-border bg-background p-4 text-sm leading-6 text-muted-foreground outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring"
+          contentEditable
+          ref={pasteRef}
+          role="textbox"
+          suppressContentEditableWarning
+          tabIndex={0}
+          onInput={(event) => {
+            event.currentTarget.textContent = "";
+          }}
+          onPaste={handlePaste}
+        >
+          {pasteMessage}
         </div>
 
         <div className="grid gap-2">
