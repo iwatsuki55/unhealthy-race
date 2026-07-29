@@ -22,7 +22,8 @@ import type {
 } from "@/modules/workout-import/domain";
 
 const maxImages = 10;
-const storageKey = "health-os.workout-import.stage-1";
+const storageKey = "health-os.workout-import.stage-2";
+const staleStorageKeys = ["health-os.workout-import.stage-1"];
 const acceptedImageTypes = "image/*";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
@@ -44,28 +45,20 @@ function createBrowserSession(): WorkoutImportSession {
 }
 
 function toStoredSession(session: WorkoutImportSession): StoredImportSession {
+  const canKeepDraft = session.status === "review_required" && session.extractionResult;
+
   return {
     ...session,
-    images: session.images.map((image) => ({
-      id: image.id,
-      fileName: image.fileName,
-      mimeType: image.mimeType,
-      sizeBytes: image.sizeBytes,
-      originalOrder: image.originalOrder,
-      currentOrder: image.currentOrder,
-      duplicateKey: image.duplicateKey,
-      sourceApplication: image.sourceApplication
-    }))
+    status: canKeepDraft ? "review_required" : "uploading",
+    images: []
   };
 }
 
 function fromStoredSession(session: StoredImportSession): WorkoutImportSession {
   return {
     ...session,
-    images: session.images.map((image) => ({
-      ...image,
-      previewUrl: undefined
-    }))
+    status: session.extractionResult ? "review_required" : "uploading",
+    images: []
   };
 }
 
@@ -230,6 +223,7 @@ export function WorkoutImportClient() {
   const draftRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    staleStorageKeys.forEach((key) => window.localStorage.removeItem(key));
     window.localStorage.setItem(storageKey, JSON.stringify(toStoredSession(session)));
   }, [session]);
 
