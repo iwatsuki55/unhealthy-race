@@ -10,9 +10,7 @@ import {
   addImagesToImportSession,
   attachDraftToImportSession,
   createImportSession,
-  getMockExtractionWarnings,
   markSessionAnalyzing,
-  mockExtractWorkoutDraft,
   moveImportedImage,
   removeImportedImage,
   reorderImportedImages
@@ -29,6 +27,12 @@ const acceptedImageTypes = "image/*";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
   images: Array<Omit<ImportedImage, "previewUrl">>;
+}
+
+interface AnalyzeResponse {
+  draft?: WorkoutImportDraft;
+  warnings?: string[];
+  error?: string;
 }
 
 function createBrowserSession(): WorkoutImportSession {
@@ -214,6 +218,8 @@ export function WorkoutImportClient() {
       return createBrowserSession();
     }
   });
+  const [imageFilesById, setImageFilesById] = useState<Map<string, File>>(() => new Map());
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [viewerImage, setViewerImage] = useState<ImportedImage | null>(null);
   const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
@@ -251,6 +257,7 @@ export function WorkoutImportClient() {
 
     setUploadProgress(10);
     const images = imageFiles.map((file) => ({
+      file,
       id: crypto.randomUUID(),
       name: file.name,
       type: file.type || "image/heic",
@@ -261,6 +268,12 @@ export function WorkoutImportClient() {
 
     setUploadProgress(70);
     setSession((current) => addImagesToImportSession(current, images));
+    setImageFilesById((current) => {
+      const next = new Map(current);
+      images.forEach((image) => next.set(image.id, image.file));
+      return next;
+    });
+    setAnalysisError(null);
     if (source === "paste") {
       setPasteMessage(
         `${imageFiles.length} pasted screenshot${imageFiles.length === 1 ? "" : "s"} added.`
@@ -290,17 +303,71 @@ export function WorkoutImportClient() {
     handleFiles(files, "paste");
   }
 
-  function analyze() {
+  function removeImage(imageId: string) {
+    setSession((current) => removeImportedImage(current, imageId));
+    setImageFilesById((current) => {
+      const next = new Map(current);
+      next.delete(imageId);
+      return next;
+    });
+    setAnalysisError(null);
+  }
+
+  async function analyze() {
+    setAnalysisError(null);
     setSession((current) => markSessionAnalyzing(current));
-    window.setTimeout(() => {
+
+    const orderedImages = [...session.images].sort((a, b) => a.currentOrder - b.currentOrder);
+    const missingImageFile = orderedImages.find((image) => !imageFilesById.get(image.id));
+
+    if (missingImageFile) {
+      setSession((current) =>
+        current.status === "analyzing" ? { ...current, status: "failed" } : current
+      );
+      setAnalysisError(
+        "Screenshot files are no longer available after the browser refresh. Please select the screenshots again."
+      );
+      return;
+    }
+
+    const formData = new FormData();
+    orderedImages.forEach((image, index) => {
+      const file = imageFilesById.get(image.id);
+
+      if (file) {
+        formData.append("images", file, image.fileName);
+        formData.append(`imageId:${index}`, image.id);
+      }
+    });
+
+    try {
+      const response = await fetch("/api/workout-import/analyze", {
+        method: "POST",
+        body: formData
+      });
+      const payload = (await response.json()) as AnalyzeResponse;
+
+      if (!response.ok || !payload.draft) {
+        throw new Error(payload.error ?? "Health OS could not analyze these screenshots.");
+      }
+
       setSession((current) =>
         attachDraftToImportSession(
           current,
-          mockExtractWorkoutDraft(current.images),
-          getMockExtractionWarnings(current.images)
+          payload.draft as WorkoutImportDraft,
+          payload.warnings ?? []
         )
       );
-    }, 700);
+    } catch (error) {
+      setSession((current) =>
+        current.status === "analyzing" ? { ...current, status: "failed" } : current
+      );
+      setAnalysisError(
+        error instanceof Error
+          ? error.message
+          : "Health OS could not analyze these screenshots. Please try again."
+      );
+    }
   }
 
   function reorderByDrag(targetImageId: string) {
@@ -325,8 +392,8 @@ export function WorkoutImportClient() {
           <p className="text-sm font-medium text-muted-foreground">Stage 1 import session</p>
           <h2 className="text-xl font-semibold tracking-normal">Upload workout screenshots</h2>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Select up to 10 screenshots. Images stay in this browser session for Stage 1 and are not
-            analyzed by AI yet.
+            Select up to 10 screenshots. Images stay in this browser session and are sent only when
+            you tap Analyze.
           </p>
         </div>
 
@@ -415,12 +482,26 @@ export function WorkoutImportClient() {
               <p className="text-sm font-medium text-foreground">
                 Draft ready. Review the extracted workout below before saving.
               </p>
+            ) : session.status === "failed" ? (
+              <p className="text-sm font-medium text-destructive">
+                Analysis failed. Your screenshots are still here, so you can retry after checking
+                the message below.
+              </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Tap Analyze to create a mock review draft for this import session.
+                Tap Analyze to extract a review draft from these screenshots.
               </p>
             )}
           </div>
+
+          {analysisError ? (
+            <div
+              className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm leading-6 text-destructive"
+              role="alert"
+            >
+              {analysisError}
+            </div>
+          ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {session.images.map((image, index) => (
@@ -497,7 +578,7 @@ export function WorkoutImportClient() {
                     size="sm"
                     type="button"
                     variant="outline"
-                    onClick={() => setSession((current) => removeImportedImage(current, image.id))}
+                    onClick={() => removeImage(image.id)}
                   >
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                     Remove
