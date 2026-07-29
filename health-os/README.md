@@ -13,7 +13,7 @@ MVP intentionally stays local, manual, and modular.
 - Tailwind CSS
 - shadcn/ui-style components
 - Prisma
-- SQLite
+- PostgreSQL
 - Node test runner
 - ESLint
 - Prettier
@@ -34,7 +34,7 @@ The development app runs at `http://localhost:3000` unless that port is already 
 Create `.env` with:
 
 ```bash
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require"
 ```
 
 ## Database Commands

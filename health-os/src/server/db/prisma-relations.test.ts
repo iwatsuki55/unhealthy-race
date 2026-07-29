@@ -2,10 +2,20 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const shouldRunDbTests = process.env.DATABASE_URL?.startsWith("postgres") ?? false;
+const dbTest = shouldRunDbTests ? test : test.skip;
+const prisma = shouldRunDbTests ? new PrismaClient() : null;
+
+function getPrisma() {
+  if (!prisma) {
+    throw new Error("Postgres DATABASE_URL is required for database relation tests.");
+  }
+
+  return prisma;
+}
 
 async function createTestUser(email: string) {
-  return prisma.user.create({
+  return getPrisma().user.create({
     data: {
       email,
       displayName: "Test User",
@@ -15,8 +25,9 @@ async function createTestUser(email: string) {
   });
 }
 
-test("deleting a run does not delete its route", async () => {
+dbTest("deleting a run does not delete its route", async () => {
   const user = await createTestUser(`run-route-${Date.now()}@health-os.test`);
+  const prisma = getPrisma();
   const route = await prisma.route.create({
     data: {
       userId: user.id,
@@ -43,8 +54,9 @@ test("deleting a run does not delete its route", async () => {
   await prisma.user.delete({ where: { id: user.id } });
 });
 
-test("deleting a strength session cascades exercises and sets", async () => {
+dbTest("deleting a strength session cascades exercises and sets", async () => {
   const user = await createTestUser(`strength-${Date.now()}@health-os.test`);
+  const prisma = getPrisma();
   const session = await prisma.strengthSession.create({
     data: {
       userId: user.id,
@@ -81,7 +93,8 @@ test("deleting a strength session cascades exercises and sets", async () => {
   await prisma.user.delete({ where: { id: user.id } });
 });
 
-test("user-owned queries filter inaccessible records", async () => {
+dbTest("user-owned queries filter inaccessible records", async () => {
+  const prisma = getPrisma();
   const [owner, other] = await Promise.all([
     createTestUser(`owner-${Date.now()}@health-os.test`),
     createTestUser(`other-${Date.now()}@health-os.test`)

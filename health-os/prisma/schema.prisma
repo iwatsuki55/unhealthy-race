@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -48,28 +48,28 @@ model Route {
 }
 
 model Run {
-  id                         String    @id @default(cuid())
-  userId                     String
-  routeId                    String?
-  runDate                    DateTime
-  startedAt                  DateTime?
-  durationSeconds            Int
-  distanceMeters             Int
-  averagePaceSecondsPerKm    Int
-  averageHeartRate           Int?
-  maximumHeartRate           Int?
-  cadenceStepsPerMinute      Int?
-  calories                   Int?
-  temperatureCelsius         Float?
-  humidityPercent            Int?
-  shoes                      String?
-  screenshotAttachmentRef    String?
-  perceivedEffort            Int?
-  notes                      String?
-  createdAt                  DateTime  @default(now())
-  updatedAt                  DateTime  @updatedAt
-  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  route                      Route?    @relation(fields: [routeId], references: [id], onDelete: SetNull)
+  id                      String    @id @default(cuid())
+  userId                  String
+  routeId                 String?
+  runDate                 DateTime
+  startedAt               DateTime?
+  durationSeconds         Int
+  distanceMeters          Int
+  averagePaceSecondsPerKm Int
+  averageHeartRate        Int?
+  maximumHeartRate        Int?
+  cadenceStepsPerMinute   Int?
+  calories                Int?
+  temperatureCelsius      Float?
+  humidityPercent         Int?
+  shoes                   String?
+  screenshotAttachmentRef String?
+  perceivedEffort         Int?
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route                   Route?    @relation(fields: [routeId], references: [id], onDelete: SetNull)
 
   @@index([userId, runDate])
   @@index([routeId])
@@ -95,16 +95,16 @@ model StrengthSession {
 }
 
 model StrengthExercise {
-  id             String          @id @default(cuid())
-  sessionId      String
-  exerciseName   String
-  exerciseOrder  Int
-  equipmentType  EquipmentType
-  notes          String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  session        StrengthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sets           StrengthSet[]
+  id            String          @id @default(cuid())
+  sessionId     String
+  exerciseName  String
+  exerciseOrder Int
+  equipmentType EquipmentType
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  session       StrengthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sets          StrengthSet[]
 
   @@index([sessionId])
   @@map("strength_exercises")
@@ -154,20 +154,20 @@ model Goal {
 }
 
 model JournalEntry {
-  id                String   @id @default(cuid())
-  userId            String
-  entryDate         DateTime
-  moodRating        Int?
-  fatigueRating     Int?
-  recoveryRating    Int?
-  workStressRating  Int?
-  alcoholNote       String?
-  saunaNote         String?
-  tagsJson          String?
-  body              String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  userId           String
+  entryDate        DateTime
+  moodRating       Int?
+  fatigueRating    Int?
+  recoveryRating   Int?
+  workStressRating Int?
+  alcoholNote      String?
+  saunaNote        String?
+  tagsJson         String?
+  body             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, entryDate])
   @@map("journal_entries")
