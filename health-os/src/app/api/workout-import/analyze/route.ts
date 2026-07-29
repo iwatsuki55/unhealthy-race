@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { extractWorkoutDraftWithOpenAI } from "@/modules/workout-import/infrastructure/openai-workout-extraction-provider";
+import {
+  extractWorkoutDraftWithOpenAI,
+  WorkoutExtractionProviderError
+} from "@/modules/workout-import/infrastructure/openai-workout-extraction-provider";
 
 const maxImages = 10;
 const maxImageBytes = 8 * 1024 * 1024;
@@ -17,12 +20,17 @@ async function fileToDataUrl(file: File) {
 }
 
 export async function POST(request: Request) {
+  let imageCount = 0;
+  let totalBytes = 0;
+
   try {
     const formData = await request.formData();
     const files = formData
       .getAll("images")
       .filter((value): value is File => value instanceof File)
       .slice(0, maxImages);
+    imageCount = files.length;
+    totalBytes = files.reduce((total, file) => total + file.size, 0);
 
     if (files.length === 0) {
       return NextResponse.json(
@@ -70,7 +78,27 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Workout import analysis failed");
+    if (error instanceof WorkoutExtractionProviderError) {
+      console.error("Workout import analysis failed", {
+        code: error.code,
+        imageCount,
+        totalBytes
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            "Health OS could not extract a clean workout draft from these screenshots. Please retry once, or remove blurry/cropped screenshots."
+        },
+        { status: 502 }
+      );
+    }
+
+    console.error("Workout import analysis failed", {
+      code: error instanceof Error ? error.message : "unknown_error",
+      imageCount,
+      totalBytes
+    });
 
     return NextResponse.json(
       {
