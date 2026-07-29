@@ -36,6 +36,11 @@ interface AnalyzeResponse {
   error?: string;
 }
 
+interface SaveResponse {
+  redirectTo?: string;
+  error?: string;
+}
+
 function createBrowserSession(): WorkoutImportSession {
   return createImportSession({
     id: crypto.randomUUID(),
@@ -97,7 +102,17 @@ function FieldRow({
   );
 }
 
-function DraftReview({ draft }: { draft: WorkoutImportDraft }) {
+function DraftReview({
+  draft,
+  isSaving,
+  saveError,
+  onSave
+}: {
+  draft: WorkoutImportDraft;
+  isSaving: boolean;
+  saveError: string | null;
+  onSave: () => void;
+}) {
   return (
     <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
       <div>
@@ -184,8 +199,14 @@ function DraftReview({ draft }: { draft: WorkoutImportDraft }) {
       </div>
 
       <div className="sticky bottom-3 rounded-lg border border-border bg-card p-3 shadow-sm">
-        <Button className="w-full" disabled type="button">
-          Save to Strength will be enabled in Stage 3
+        {saveError ? (
+          <p className="mb-3 text-sm font-medium text-destructive" role="alert">
+            {saveError}
+          </p>
+        ) : null}
+        <Button className="w-full" disabled={isSaving} type="button" onClick={onSave}>
+          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+          {isSaving ? "Saving..." : "Save to Strength"}
         </Button>
       </div>
     </section>
@@ -213,6 +234,8 @@ export function WorkoutImportClient() {
   });
   const [imageFilesById, setImageFilesById] = useState<Map<string, File>>(() => new Map());
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [viewerImage, setViewerImage] = useState<ImportedImage | null>(null);
   const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
@@ -268,6 +291,7 @@ export function WorkoutImportClient() {
       return next;
     });
     setAnalysisError(null);
+    setSaveError(null);
     if (source === "paste") {
       setPasteMessage(
         `${imageFiles.length} pasted screenshot${imageFiles.length === 1 ? "" : "s"} added.`
@@ -309,6 +333,7 @@ export function WorkoutImportClient() {
 
   async function analyze() {
     setAnalysisError(null);
+    setSaveError(null);
     setSession((current) => markSessionAnalyzing(current));
 
     const orderedImages = [...session.images].sort((a, b) => a.currentOrder - b.currentOrder);
@@ -361,6 +386,39 @@ export function WorkoutImportClient() {
           ? error.message
           : "Health OS could not analyze these screenshots. Please try again."
       );
+    }
+  }
+
+  async function saveDraft() {
+    if (!session.extractionResult || isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      const response = await fetch("/api/workout-import/strength-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(session.extractionResult)
+      });
+      const payload = (await response.json()) as SaveResponse;
+
+      if (!response.ok || !payload.redirectTo) {
+        throw new Error(payload.error ?? "Health OS could not save this workout.");
+      }
+
+      window.localStorage.removeItem(storageKey);
+      window.location.assign(payload.redirectTo);
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "Health OS could not save this workout."
+      );
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -597,7 +655,12 @@ export function WorkoutImportClient() {
 
       {session.extractionResult ? (
         <section ref={draftRef}>
-          <DraftReview draft={session.extractionResult} />
+          <DraftReview
+            draft={session.extractionResult}
+            isSaving={isSaving}
+            saveError={saveError}
+            onSave={saveDraft}
+          />
         </section>
       ) : null}
 
