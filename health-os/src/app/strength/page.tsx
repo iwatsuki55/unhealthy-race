@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Dumbbell, Plus } from "lucide-react";
+import { Dumbbell, Plus, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { getCurrentUserId } from "@/core/application/current-user";
@@ -28,12 +28,20 @@ export default async function StrengthPage() {
           <p className="text-sm font-medium text-muted-foreground">Strength</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">Strength Training Log</h1>
         </div>
-        <Button asChild>
-          <Link href="/strength/new">
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Log Session
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild>
+            <Link href="/workout-import/new">
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Import Workout
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/strength/new">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Log Manually
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {sessions.length === 0 ? (
@@ -44,9 +52,14 @@ export default async function StrengthPage() {
             Start with workout type, exercises, sets, reps, and weights. Keep it simple, then add
             notes when they help.
           </p>
-          <Button asChild className="mt-5">
-            <Link href="/strength/new">Log the first session</Link>
-          </Button>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/workout-import/new">Import workout</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/strength/new">Log manually</Link>
+            </Button>
+          </div>
         </section>
       ) : (
         <section className="grid gap-3">

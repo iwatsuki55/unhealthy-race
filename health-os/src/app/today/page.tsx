@@ -1,6 +1,15 @@
 import Link from "next/link";
 import type { Route as NextRoute } from "next";
-import { Dumbbell, Flag, MapIcon, NotebookPen, Route, Target, type LucideIcon } from "lucide-react";
+import {
+  Dumbbell,
+  Flag,
+  MapIcon,
+  NotebookPen,
+  Route,
+  Target,
+  Upload,
+  type LucideIcon
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/core/application/current-user";
@@ -17,6 +26,7 @@ const primaryQuickActions: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
+  { href: "/workout-import/new", label: "Import Workout", icon: Upload },
   { href: "/running/new", label: "Log Run", icon: Route },
   { href: "/strength/new", label: "Log Strength", icon: Dumbbell },
   { href: "/journal/new", label: "Add Journal Entry", icon: NotebookPen }
@@ -138,12 +148,17 @@ function QuickActions() {
       <h2 id="quick-actions-title" className="text-lg font-semibold tracking-normal">
         Quick logging
       </h2>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-4">
         {primaryQuickActions.map((action) => {
           const Icon = action.icon;
 
           return (
-            <Button asChild className="h-12 justify-start" key={action.href}>
+            <Button
+              asChild
+              className="h-12 justify-start"
+              key={action.href}
+              variant={action.href === "/workout-import/new" ? "default" : "outline"}
+            >
               <Link href={action.href}>
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 {action.label}
