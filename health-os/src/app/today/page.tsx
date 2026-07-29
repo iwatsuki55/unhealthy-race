@@ -26,6 +26,7 @@ const primaryQuickActions: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
+  { href: "/workout-import/new?type=running", label: "Import Run", icon: Upload },
   { href: "/workout-import/new", label: "Import Workout", icon: Upload },
   { href: "/running/new", label: "Log Run", icon: Route },
   { href: "/strength/new", label: "Log Strength", icon: Dumbbell },
@@ -148,7 +149,7 @@ function QuickActions() {
       <h2 id="quick-actions-title" className="text-lg font-semibold tracking-normal">
         Quick logging
       </h2>
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {primaryQuickActions.map((action) => {
           const Icon = action.icon;
 

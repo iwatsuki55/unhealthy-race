@@ -1,5 +1,6 @@
 import type {
   ImportedImage,
+  RunImportDraft,
   WorkoutImportDraft,
   WorkoutImportSession
 } from "@/modules/workout-import/domain";
@@ -135,7 +136,7 @@ export function markSessionAnalyzing(session: WorkoutImportSession): WorkoutImpo
 
 export function attachDraftToImportSession(
   session: WorkoutImportSession,
-  draft: WorkoutImportDraft,
+  draft: RunImportDraft | WorkoutImportDraft,
   warnings: string[]
 ): WorkoutImportSession {
   return {

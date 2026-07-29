@@ -17,6 +17,7 @@ import {
 } from "@/modules/workout-import/application";
 import type {
   ImportedImage,
+  RunImportDraft,
   WorkoutImportDraft,
   WorkoutImportSession
 } from "@/modules/workout-import/domain";
@@ -25,13 +26,14 @@ const maxImages = 10;
 const storageKey = "health-os.workout-import.stage-2";
 const staleStorageKeys = ["health-os.workout-import.stage-1"];
 const acceptedImageTypes = "image/*";
+type ImportType = "strength" | "running";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
   images: Array<Omit<ImportedImage, "previewUrl">>;
 }
 
 interface AnalyzeResponse {
-  draft?: WorkoutImportDraft;
+  draft?: RunImportDraft | WorkoutImportDraft;
   warnings?: string[];
   error?: string;
 }
@@ -213,7 +215,115 @@ function DraftReview({
   );
 }
 
-export function WorkoutImportClient() {
+function RunDraftReview({
+  draft,
+  isSaving,
+  saveError,
+  onSave
+}: {
+  draft: RunImportDraft;
+  isSaving: boolean;
+  saveError: string | null;
+  onSave: () => void;
+}) {
+  return (
+    <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
+      <div>
+        <p className="text-sm font-medium text-muted-foreground">Review draft</p>
+        <h2 className="mt-1 text-xl font-semibold tracking-normal">Run Import Draft</h2>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <FieldRow label="Title" value={draft.title.value} confidence={draft.title.confidence} />
+        <FieldRow
+          label="Run date"
+          value={draft.runDate.value}
+          confidence={draft.runDate.confidence}
+        />
+        <FieldRow
+          label="Start time"
+          value={draft.startTime.value}
+          confidence={draft.startTime.confidence}
+        />
+        <FieldRow
+          label="Distance meters"
+          value={draft.distanceMeters.value}
+          confidence={draft.distanceMeters.confidence}
+        />
+        <FieldRow
+          label="Duration seconds"
+          value={draft.durationSeconds.value}
+          confidence={draft.durationSeconds.confidence}
+        />
+        <FieldRow
+          label="Avg pace sec/km"
+          value={draft.averagePaceSecondsPerKm.value}
+          confidence={draft.averagePaceSecondsPerKm.confidence}
+        />
+        <FieldRow
+          label="Avg HR"
+          value={draft.averageHeartRate.value}
+          confidence={draft.averageHeartRate.confidence}
+        />
+        <FieldRow
+          label="Max HR"
+          value={draft.maximumHeartRate.value}
+          confidence={draft.maximumHeartRate.confidence}
+        />
+        <FieldRow
+          label="Cadence"
+          value={draft.cadenceStepsPerMinute.value}
+          confidence={draft.cadenceStepsPerMinute.confidence}
+        />
+        <FieldRow
+          label="Calories"
+          value={draft.calories.value}
+          confidence={draft.calories.confidence}
+        />
+        <FieldRow
+          label="Temperature"
+          value={draft.temperatureCelsius.value}
+          confidence={draft.temperatureCelsius.confidence}
+        />
+        <FieldRow
+          label="Humidity"
+          value={draft.humidityPercent.value}
+          confidence={draft.humidityPercent.confidence}
+        />
+        <FieldRow label="Shoes" value={draft.shoes.value} confidence={draft.shoes.confidence} />
+        <FieldRow
+          label="RPE"
+          value={draft.perceivedEffort.value}
+          confidence={draft.perceivedEffort.confidence}
+        />
+        <FieldRow label="Notes" value={draft.notes.value} confidence={draft.notes.confidence} />
+        <FieldRow
+          label="Source"
+          value={draft.sourceApplication.value}
+          confidence={draft.sourceApplication.confidence}
+        />
+      </div>
+
+      <div className="sticky bottom-3 rounded-lg border border-border bg-card p-3 shadow-sm">
+        {saveError ? (
+          <p className="mb-3 text-sm font-medium text-destructive" role="alert">
+            {saveError}
+          </p>
+        ) : null}
+        <Button className="w-full" disabled={isSaving} type="button" onClick={onSave}>
+          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+          {isSaving ? "Saving..." : "Save to Running"}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function isRunDraft(draft: RunImportDraft | WorkoutImportDraft): draft is RunImportDraft {
+  return "distanceMeters" in draft && "runDate" in draft;
+}
+
+export function WorkoutImportClient({ importType = "strength" }: { importType?: ImportType }) {
   const [session, setSession] = useState<WorkoutImportSession>(() => {
     if (typeof window === "undefined") {
       return createBrowserSession();
@@ -360,22 +470,24 @@ export function WorkoutImportClient() {
     });
 
     try {
-      const response = await fetch("/api/workout-import/analyze", {
-        method: "POST",
-        body: formData
-      });
+      const response = await fetch(
+        importType === "running"
+          ? "/api/workout-import/analyze-run"
+          : "/api/workout-import/analyze",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
       const payload = (await response.json()) as AnalyzeResponse;
 
       if (!response.ok || !payload.draft) {
         throw new Error(payload.error ?? "Health OS could not analyze these screenshots.");
       }
+      const draft = payload.draft;
 
       setSession((current) =>
-        attachDraftToImportSession(
-          current,
-          payload.draft as WorkoutImportDraft,
-          payload.warnings ?? []
-        )
+        attachDraftToImportSession(current, draft, payload.warnings ?? [])
       );
     } catch (error) {
       setSession((current) =>
@@ -398,13 +510,18 @@ export function WorkoutImportClient() {
     setSaveError(null);
 
     try {
-      const response = await fetch("/api/workout-import/strength-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(session.extractionResult)
-      });
+      const response = await fetch(
+        importType === "running"
+          ? "/api/workout-import/run"
+          : "/api/workout-import/strength-session",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(session.extractionResult)
+        }
+      );
       const payload = (await response.json()) as SaveResponse;
 
       if (!response.ok || !payload.redirectTo) {
@@ -414,9 +531,7 @@ export function WorkoutImportClient() {
       window.localStorage.removeItem(storageKey);
       window.location.assign(payload.redirectTo);
     } catch (error) {
-      setSaveError(
-        error instanceof Error ? error.message : "Health OS could not save this workout."
-      );
+      setSaveError(error instanceof Error ? error.message : "Health OS could not save this log.");
     } finally {
       setIsSaving(false);
     }
@@ -442,7 +557,9 @@ export function WorkoutImportClient() {
       >
         <div className="grid gap-2">
           <p className="text-sm font-medium text-muted-foreground">Stage 1 import session</p>
-          <h2 className="text-xl font-semibold tracking-normal">Upload workout screenshots</h2>
+          <h2 className="text-xl font-semibold tracking-normal">
+            Upload {importType === "running" ? "run" : "workout"} screenshots
+          </h2>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
             Select up to 10 screenshots. Images stay in this browser session and are sent only when
             you tap Analyze.
@@ -532,7 +649,8 @@ export function WorkoutImportClient() {
               </div>
             ) : session.status === "review_required" ? (
               <p className="text-sm font-medium text-foreground">
-                Draft ready. Review the extracted workout below before saving.
+                Draft ready. Review the extracted {importType === "running" ? "run" : "workout"}{" "}
+                below before saving.
               </p>
             ) : session.status === "failed" ? (
               <p className="text-sm font-medium text-destructive">
@@ -655,12 +773,21 @@ export function WorkoutImportClient() {
 
       {session.extractionResult ? (
         <section ref={draftRef}>
-          <DraftReview
-            draft={session.extractionResult}
-            isSaving={isSaving}
-            saveError={saveError}
-            onSave={saveDraft}
-          />
+          {isRunDraft(session.extractionResult) ? (
+            <RunDraftReview
+              draft={session.extractionResult}
+              isSaving={isSaving}
+              saveError={saveError}
+              onSave={saveDraft}
+            />
+          ) : (
+            <DraftReview
+              draft={session.extractionResult}
+              isSaving={isSaving}
+              saveError={saveError}
+              onSave={saveDraft}
+            />
+          )}
         </section>
       ) : null}
 
@@ -672,7 +799,9 @@ export function WorkoutImportClient() {
           explicitly requested by the user.
         </p>
         <Button asChild className="mt-4" variant="outline">
-          <Link href="/strength/new">Switch to manual entry</Link>
+          <Link href={importType === "running" ? "/running/new" : "/strength/new"}>
+            Switch to manual entry
+          </Link>
         </Button>
       </section>
 

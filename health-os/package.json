@@ -8,7 +8,7 @@
     "vercel-build": "prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "test": "node --test --experimental-strip-types --experimental-specifier-resolution=node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/lib/format.test.ts src/modules/today/application/today-calculations.test.ts src/modules/routes/domain/route-deletion-policy.test.ts src/modules/workout-import/application/workout-import-session.test.ts src/modules/workout-import/application/workout-extraction-schema.test.ts src/modules/workout-import/application/strength-draft-mapper.test.ts src/core/shared/validation.test.ts src/server/db/prisma-relations.test.ts",
+    "test": "node --test --experimental-strip-types --experimental-specifier-resolution=node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/lib/format.test.ts src/modules/today/application/today-calculations.test.ts src/modules/routes/domain/route-deletion-policy.test.ts src/modules/workout-import/application/workout-import-session.test.ts src/modules/workout-import/application/workout-extraction-schema.test.ts src/modules/workout-import/application/strength-draft-mapper.test.ts src/modules/workout-import/application/run-draft-mapper.test.ts src/core/shared/validation.test.ts src/server/db/prisma-relations.test.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

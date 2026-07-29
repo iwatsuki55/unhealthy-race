@@ -64,6 +64,25 @@ export interface WorkoutImportDraft {
   exercises: WorkoutImportExerciseDraft[];
 }
 
+export interface RunImportDraft {
+  title: ImportField<string>;
+  runDate: ImportField<string>;
+  startTime: ImportField<string>;
+  distanceMeters: ImportField<number>;
+  durationSeconds: ImportField<number>;
+  averagePaceSecondsPerKm: ImportField<number>;
+  averageHeartRate: ImportField<number>;
+  maximumHeartRate: ImportField<number>;
+  cadenceStepsPerMinute: ImportField<number>;
+  calories: ImportField<number>;
+  temperatureCelsius: ImportField<number>;
+  humidityPercent: ImportField<number>;
+  shoes: ImportField<string>;
+  perceivedEffort: ImportField<number>;
+  notes: ImportField<string>;
+  sourceApplication: ImportField<string>;
+}
+
 export interface WorkoutImportSession {
   id: string;
   userId: string;
@@ -71,6 +90,6 @@ export interface WorkoutImportSession {
   createdAt: string;
   images: ImportedImage[];
   detectedSourceApplications: string[];
-  extractionResult: WorkoutImportDraft | null;
+  extractionResult: WorkoutImportDraft | RunImportDraft | null;
   validationWarnings: string[];
 }

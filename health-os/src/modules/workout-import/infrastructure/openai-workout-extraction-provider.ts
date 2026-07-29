@@ -1,5 +1,8 @@
-import type { WorkoutImportDraft } from "@/modules/workout-import/domain";
-import { parseWorkoutImportDraft } from "@/modules/workout-import/application/workout-extraction-schema";
+import type { RunImportDraft, WorkoutImportDraft } from "@/modules/workout-import/domain";
+import {
+  parseRunImportDraft,
+  parseWorkoutImportDraft
+} from "@/modules/workout-import/application/workout-extraction-schema";
 
 interface ImageInput {
   id: string;
@@ -84,6 +87,44 @@ field<T> is:
 Use the provided source image ids exactly. If a value is unclear, use null with low confidence.
 Return only a JSON object. Do not wrap it in markdown.`;
 
+const runPrompt = `You analyze multiple iPhone running screenshots as one running log import.
+
+Extract only information visible in the screenshots. Never invent missing values.
+Prioritize Apple Fitness, running app summaries, GPS workout summaries, and route screenshots.
+Convert distance to integer meters, duration to total seconds, and pace to seconds per kilometer.
+If a value is not visible, use null with low confidence.
+
+Return JSON that matches this TypeScript shape exactly:
+{
+  "title": field<string>,
+  "runDate": field<string>,
+  "startTime": field<string>,
+  "distanceMeters": field<number>,
+  "durationSeconds": field<number>,
+  "averagePaceSecondsPerKm": field<number>,
+  "averageHeartRate": field<number>,
+  "maximumHeartRate": field<number>,
+  "cadenceStepsPerMinute": field<number>,
+  "calories": field<number>,
+  "temperatureCelsius": field<number>,
+  "humidityPercent": field<number>,
+  "shoes": field<string>,
+  "perceivedEffort": field<number>,
+  "notes": field<string>,
+  "sourceApplication": field<string>
+}
+
+field<T> is:
+{
+  "value": T | null,
+  "confidence": "high" | "medium" | "low",
+  "sourceImageIds": string[],
+  "alternatives"?: T[],
+  "conflict"?: boolean
+}
+
+Use the provided source image ids exactly. Return only a JSON object. Do not wrap it in markdown.`;
+
 function extractResponseText(response: OpenAIResponse) {
   if (response.output_text) {
     return response.output_text;
@@ -109,9 +150,7 @@ function extractJson(text: string) {
   return trimmed;
 }
 
-export async function extractWorkoutDraftWithOpenAI(
-  images: ImageInput[]
-): Promise<WorkoutImportDraft> {
+async function requestExtraction(images: ImageInput[], extractionPrompt: string) {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -140,7 +179,7 @@ export async function extractWorkoutDraftWithOpenAI(
           content: [
             {
               type: "input_text",
-              text: `${prompt}\n\nSource images:\n${imageDescriptions}`
+              text: `${extractionPrompt}\n\nSource images:\n${imageDescriptions}`
             },
             ...images.map((image) => ({
               type: "input_image",
@@ -192,11 +231,21 @@ export async function extractWorkoutDraftWithOpenAI(
   }
 
   try {
-    return parseWorkoutImportDraft(JSON.parse(extractJson(text)));
+    return JSON.parse(extractJson(text)) as unknown;
   } catch {
     throw new WorkoutExtractionProviderError(
       "OpenAI workout extraction returned invalid JSON.",
       "openai_invalid_extraction_json"
     );
   }
+}
+
+export async function extractWorkoutDraftWithOpenAI(
+  images: ImageInput[]
+): Promise<WorkoutImportDraft> {
+  return parseWorkoutImportDraft(await requestExtraction(images, prompt));
+}
+
+export async function extractRunDraftWithOpenAI(images: ImageInput[]): Promise<RunImportDraft> {
+  return parseRunImportDraft(await requestExtraction(images, runPrompt));
 }

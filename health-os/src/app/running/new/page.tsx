@@ -15,7 +15,15 @@ export default async function NewRunPage() {
         <Link className="text-sm text-muted-foreground hover:text-foreground" href="/running">
           Back to running
         </Link>
-        <h1 className="mt-3 text-3xl font-semibold tracking-normal">Log Run</h1>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-3xl font-semibold tracking-normal">Log Run</h1>
+          <Link
+            className="text-sm font-medium text-primary hover:text-primary/80"
+            href="/workout-import/new?type=running"
+          >
+            Import from screenshots
+          </Link>
+        </div>
       </div>
 
       <section>

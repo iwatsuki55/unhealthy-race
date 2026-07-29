@@ -43,8 +43,32 @@ export const workoutImportDraftSchema = z.object({
   )
 });
 
+export const runImportDraftSchema = z.object({
+  title: importFieldSchema(z.string()),
+  runDate: importFieldSchema(z.string()),
+  startTime: importFieldSchema(z.string()),
+  distanceMeters: importFieldSchema(z.number()),
+  durationSeconds: importFieldSchema(z.number()),
+  averagePaceSecondsPerKm: importFieldSchema(z.number()),
+  averageHeartRate: importFieldSchema(z.number()),
+  maximumHeartRate: importFieldSchema(z.number()),
+  cadenceStepsPerMinute: importFieldSchema(z.number()),
+  calories: importFieldSchema(z.number()),
+  temperatureCelsius: importFieldSchema(z.number()),
+  humidityPercent: importFieldSchema(z.number()),
+  shoes: importFieldSchema(z.string()),
+  perceivedEffort: importFieldSchema(z.number()),
+  notes: importFieldSchema(z.string()),
+  sourceApplication: importFieldSchema(z.string())
+});
+
 export type WorkoutImportDraftResponse = z.infer<typeof workoutImportDraftSchema>;
+export type RunImportDraftResponse = z.infer<typeof runImportDraftSchema>;
 
 export function parseWorkoutImportDraft(value: unknown) {
   return workoutImportDraftSchema.parse(value);
+}
+
+export function parseRunImportDraft(value: unknown) {
+  return runImportDraftSchema.parse(value);
 }

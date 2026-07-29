@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Route } from "lucide-react";
+import { Plus, Route, Upload } from "lucide-react";
 
 import { getCurrentUserId } from "@/core/application/current-user";
 import { Button } from "@/components/ui/button";
@@ -37,12 +37,20 @@ export default async function RunningPage() {
           <p className="text-sm font-medium text-muted-foreground">Running</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">Running Log</h1>
         </div>
-        <Button asChild>
-          <Link href="/running/new">
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Log Run
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild>
+            <Link href="/workout-import/new?type=running">
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Import Run
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/running/new">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Log Run
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {runs.length === 0 ? (
@@ -54,7 +62,7 @@ export default async function RunningPage() {
             wait until they matter.
           </p>
           <Button asChild className="mt-5">
-            <Link href="/running/new">Log the first run</Link>
+            <Link href="/workout-import/new?type=running">Import the first run</Link>
           </Button>
         </section>
       ) : (

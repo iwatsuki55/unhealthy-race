@@ -2,21 +2,32 @@ import Link from "next/link";
 
 import { WorkoutImportLoader } from "@/modules/workout-import/presentation";
 
-export default function NewWorkoutImportPage() {
+interface NewWorkoutImportPageProps {
+  searchParams: Promise<{
+    type?: string;
+  }>;
+}
+
+export default async function NewWorkoutImportPage({ searchParams }: NewWorkoutImportPageProps) {
+  const { type } = await searchParams;
+  const importType = type === "running" ? "running" : "strength";
+  const backHref = importType === "running" ? "/running" : "/strength";
+  const title = importType === "running" ? "Import Run" : "Import Workout";
+
   return (
     <div className="space-y-8">
       <div>
-        <Link className="text-sm text-muted-foreground hover:text-foreground" href="/strength">
-          Back to strength
+        <Link className="text-sm text-muted-foreground hover:text-foreground" href={backHref}>
+          Back to {importType === "running" ? "running" : "strength"}
         </Link>
-        <h1 className="mt-3 text-3xl font-semibold tracking-normal">Import Workout</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-normal">{title}</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Upload multiple workout screenshots, check the image order, and review a draft before
-          anything is saved.
+          Upload multiple screenshots, check the image order, and review a draft before anything is
+          saved.
         </p>
       </div>
 
-      <WorkoutImportLoader />
+      <WorkoutImportLoader importType={importType} />
     </div>
   );
 }

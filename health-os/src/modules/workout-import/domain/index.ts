@@ -3,6 +3,7 @@ export type {
   ImportedImage,
   ImportField,
   ImportSessionStatus,
+  RunImportDraft,
   WorkoutImportDraft,
   WorkoutImportExerciseDraft,
   WorkoutImportSession,
