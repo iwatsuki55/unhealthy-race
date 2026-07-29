@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Eye, Loader2, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent } from "react";
@@ -25,7 +25,7 @@ import type {
 
 const maxImages = 10;
 const storageKey = "health-os.workout-import.stage-1";
-const acceptedImageTypes = "image/*,.heic,.heif,.jpg,.jpeg,.png,.webp";
+const acceptedImageTypes = "image/*";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
   images: Array<Omit<ImportedImage, "previewUrl">>;
@@ -330,20 +330,23 @@ export function WorkoutImportClient() {
           </p>
         </div>
 
-        <input
-          accept={acceptedImageTypes}
-          className="block min-h-12 w-full cursor-pointer rounded-md border border-input bg-background px-3 py-3 text-base text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
-          multiple
-          type="file"
-          onChange={(event) => {
-            if (event.currentTarget.files) {
-              handleFiles(event.currentTarget.files);
-              event.currentTarget.value = "";
-            }
-          }}
-        />
-
         <div className="flex flex-wrap gap-3">
+          <label className="relative inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring">
+            <ImagePlus className="h-4 w-4" aria-hidden="true" />
+            Select from Photos
+            <input
+              accept={acceptedImageTypes}
+              className="absolute inset-0 cursor-pointer opacity-0"
+              multiple
+              type="file"
+              onChange={(event) => {
+                if (event.currentTarget.files) {
+                  handleFiles(event.currentTarget.files);
+                  event.currentTarget.value = "";
+                }
+              }}
+            />
+          </label>
           <Button
             className="h-12"
             type="button"
@@ -355,8 +358,8 @@ export function WorkoutImportClient() {
         </div>
 
         <p className="text-xs leading-5 text-muted-foreground">
-          On iPhone, use the native file picker above and choose Photo Library. If pasted images do
-          not appear, the Photos picker is more reliable.
+          Picker v3. On iPhone, tap Select from Photos and choose Photo Library. If the browser
+          keeps showing an older screen, reload this page once.
         </p>
 
         <div
