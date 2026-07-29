@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Eye, ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent } from "react";
@@ -25,7 +25,7 @@ import type {
 
 const maxImages = 10;
 const storageKey = "health-os.workout-import.stage-1";
-const acceptedImageTypes = "image/heic,image/heif,image/jpeg,image/png,image/webp";
+const acceptedImageTypes = "image/*,.heic,.heif,.jpg,.jpeg,.png,.webp";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
   images: Array<Omit<ImportedImage, "previewUrl">>;
@@ -220,7 +220,6 @@ export function WorkoutImportClient() {
   const [pasteMessage, setPasteMessage] = useState(
     "Tap here, then paste screenshots from the clipboard."
   );
-  const inputRef = useRef<HTMLInputElement>(null);
   const pasteRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLElement>(null);
 
@@ -333,9 +332,8 @@ export function WorkoutImportClient() {
 
         <input
           accept={acceptedImageTypes}
-          className="sr-only"
+          className="block min-h-12 w-full cursor-pointer rounded-md border border-input bg-background px-3 py-3 text-base text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
           multiple
-          ref={inputRef}
           type="file"
           onChange={(event) => {
             if (event.currentTarget.files) {
@@ -346,20 +344,6 @@ export function WorkoutImportClient() {
         />
 
         <div className="flex flex-wrap gap-3">
-          <Button className="h-12" type="button" onClick={() => inputRef.current?.click()}>
-            <Upload className="h-4 w-4" aria-hidden="true" />
-            Select screenshots
-          </Button>
-          <Button
-            className="h-12"
-            disabled={remainingSlots <= 0}
-            type="button"
-            variant="outline"
-            onClick={() => inputRef.current?.click()}
-          >
-            <ImagePlus className="h-4 w-4" aria-hidden="true" />
-            Add more
-          </Button>
           <Button
             className="h-12"
             type="button"
@@ -369,6 +353,11 @@ export function WorkoutImportClient() {
             Paste screenshots
           </Button>
         </div>
+
+        <p className="text-xs leading-5 text-muted-foreground">
+          On iPhone, use the native file picker above and choose Photo Library. If pasted images do
+          not appear, the Photos picker is more reliable.
+        </p>
 
         <div
           aria-label="Paste screenshots here"
