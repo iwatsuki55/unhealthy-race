@@ -102,9 +102,9 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
       ) : null}
 
       <section className="rounded-lg border border-border bg-card p-4">
-        <h2 className="text-sm font-semibold tracking-normal">Related runs</h2>
+        <h2 className="text-sm font-semibold tracking-normal">Related cardio</h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Running Log is not implemented yet. Route-linked runs will appear here in a later
+          Cardio Log is not implemented yet. Route-linked cardio sessions will appear here in a later
           milestone.
         </p>
       </section>
@@ -112,12 +112,12 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
       <section className="rounded-lg border border-destructive bg-card p-4">
         <h2 className="text-sm font-semibold tracking-normal">Delete or deactivate route</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Unused routes are deleted. Routes with historical runs are deactivated to preserve your
+          Unused routes are deleted. Routes with historical cardio sessions are deactivated to preserve your
           training history.
         </p>
         <form action={deleteRoute} className="mt-4">
           <ConfirmDeleteButton
-            confirmMessage="Delete this route? If it has linked runs, it will be deactivated instead."
+            confirmMessage="Delete this route? If it has linked cardio sessions, it will be deactivated instead."
             label="Delete or deactivate route"
           />
         </form>

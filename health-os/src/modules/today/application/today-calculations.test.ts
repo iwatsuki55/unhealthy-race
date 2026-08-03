@@ -111,10 +111,11 @@ test("aggregateTodayData combines weekly summary, focus, activity, and journal c
         status: "active"
       }
     ],
-    runs: [
+    cardioSessions: [
       {
         id: "run-1",
         routeId: "route-1",
+        activityType: "outdoor_run",
         runDate: new Date("2026-07-27T00:00:00.000Z"),
         startedAt: null,
         distanceMeters: 6000
@@ -142,13 +143,13 @@ test("aggregateTodayData combines weekly summary, focus, activity, and journal c
   });
 
   assert.equal(result.focusGoal?.id, "goal-2");
-  assert.equal(result.weeklyContext.runningDistanceMeters, 6000);
-  assert.equal(result.weeklyContext.runCount, 1);
+  assert.equal(result.weeklyContext.cardioDistanceMeters, 6000);
+  assert.equal(result.weeklyContext.cardioSessionCount, 1);
   assert.equal(result.weeklyContext.strengthSessionCount, 1);
   assert.equal(result.weeklyContext.journalEntryCount, 1);
   assert.deepEqual(
     result.recentActivity.map((item) => item.type),
-    ["journal", "strength", "run"]
+    ["journal", "strength", "cardio"]
   );
   assert.equal(result.latestJournalEntry?.id, "journal-1");
 });

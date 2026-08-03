@@ -1,4 +1,8 @@
-import type { CreateRunInput } from "../../running/domain/run.schema.ts";
+import type { CreateCardioSessionInput } from "../../cardio/domain/cardio-session.schema.ts";
+import {
+  cardioActivityTypeValues,
+  type CardioActivityType
+} from "../../cardio/domain/cardio-activity.ts";
 import type { RunImportDraft } from "../domain/workout-import.ts";
 
 function todayDateInput() {
@@ -48,10 +52,19 @@ function rating(value: number | null) {
     : undefined;
 }
 
-export function mapRunImportDraftToRunInput(draft: RunImportDraft): Partial<CreateRunInput> {
+function activityType(value: string | null): CardioActivityType {
+  return cardioActivityTypeValues.includes(value as CardioActivityType)
+    ? (value as CardioActivityType)
+    : "outdoor_run";
+}
+
+export function mapRunImportDraftToRunInput(
+  draft: RunImportDraft
+): Partial<CreateCardioSessionInput> {
   const runDate = normalizeDate(draft.runDate.value);
 
   return {
+    activityType: activityType(draft.activityType.value),
     runDate,
     startedAt: normalizeStartedAt(runDate, draft.startTime.value),
     distanceMeters: positiveInt(draft.distanceMeters.value),

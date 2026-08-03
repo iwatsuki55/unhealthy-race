@@ -1,3 +1,3 @@
 # Routes Domain
 
-Owns reusable running routes and route metadata.
+Owns reusable cardio routes and route metadata.

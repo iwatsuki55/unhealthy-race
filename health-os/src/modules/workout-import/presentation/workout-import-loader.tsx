@@ -17,7 +17,7 @@ const WorkoutImportClient = dynamic(
 export function WorkoutImportLoader({
   importType = "strength"
 }: {
-  importType?: "running" | "strength";
+  importType?: "cardio" | "strength";
 }) {
   return <WorkoutImportClient importType={importType} />;
 }

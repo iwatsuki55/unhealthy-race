@@ -17,7 +17,7 @@ const navItems: Array<{
   icon: LucideIcon;
 }> = [
   { href: "/today", label: "Today", icon: SunMedium },
-  { href: "/running", label: "Running", icon: Route },
+  { href: "/cardio", label: "Cardio", icon: Route },
   { href: "/strength", label: "Strength", icon: Dumbbell },
   { href: "/routes", label: "Routes", icon: Map },
   { href: "/goals", label: "Goals", icon: Flag },

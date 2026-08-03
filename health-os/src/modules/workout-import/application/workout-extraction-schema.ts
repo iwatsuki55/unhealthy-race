@@ -45,6 +45,22 @@ export const workoutImportDraftSchema = z.object({
 
 export const runImportDraftSchema = z.object({
   title: importFieldSchema(z.string()),
+  activityType: importFieldSchema(
+    z.enum([
+      "outdoor_run",
+      "treadmill_run",
+      "outdoor_walk",
+      "treadmill_walk",
+      "exercise_bike",
+      "outdoor_cycling",
+      "hiking",
+      "rowing",
+      "swimming",
+      "stair_climber",
+      "elliptical",
+      "other"
+    ])
+  ),
   runDate: importFieldSchema(z.string()),
   startTime: importFieldSchema(z.string()),
   distanceMeters: importFieldSchema(z.number()),

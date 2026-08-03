@@ -63,8 +63,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       draft,
       warnings: [
-        "This running draft was extracted from screenshots. Review all fields before saving.",
-        "Distance and duration are required before Health OS can save a run."
+        "This cardio draft was extracted from screenshots. Review all fields before saving.",
+        "Distance and duration are required before Health OS can save a cardio session."
       ]
     });
   } catch (error) {
@@ -72,14 +72,14 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Run analysis is not configured yet. Set OPENAI_API_KEY on the server and try again."
+            "Cardio analysis is not configured yet. Set OPENAI_API_KEY on the server and try again."
         },
         { status: 503 }
       );
     }
 
-    console.error("Run import analysis failed", {
-      code: error instanceof WorkoutExtractionProviderError ? error.code : "run_analysis_failed",
+    console.error("Cardio import analysis failed", {
+      code: error instanceof WorkoutExtractionProviderError ? error.code : "cardio_analysis_failed",
       imageCount,
       totalBytes
     });
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Health OS could not extract a clean run draft from these screenshots. Please retry once, or remove blurry/cropped screenshots."
+          "Health OS could not extract a clean cardio draft from these screenshots. Please retry once, or remove blurry/cropped screenshots."
       },
       { status: 502 }
     );

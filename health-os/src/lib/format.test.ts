@@ -9,7 +9,7 @@ import {
   normalizeDurationInput,
   secondsToDurationInput
 } from "./format.ts";
-import { calculateAveragePaceSecondsPerKm } from "../modules/running/domain/run-calculations.ts";
+import { calculateAveragePaceSecondsPerKm } from "../modules/cardio/domain/cardio-calculations.ts";
 
 test("kilometersInputToMeters converts decimal kilometers to integer meters", () => {
   assert.equal(kilometersInputToMeters("3.12"), 3120);

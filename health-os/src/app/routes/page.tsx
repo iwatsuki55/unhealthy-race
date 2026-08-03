@@ -38,7 +38,7 @@ export default async function RoutesPage() {
           <Map className="h-5 w-5 text-primary" aria-hidden="true" />
           <h2 className="mt-4 text-xl font-semibold tracking-normal">Start with a favorite loop</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Save your usual routes once, then attach them to future runs with a single choice.
+            Save your usual routes once, then attach them to future cardio sessions with a single choice.
           </p>
           <Button asChild className="mt-5">
             <Link href="/routes/new">Create the first route</Link>

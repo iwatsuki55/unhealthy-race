@@ -4,7 +4,7 @@ export type SurfaceType = (typeof surfaceTypes)[number];
 
 export const surfaceTypes = ["road", "trail", "track", "treadmill", "mixed", "unknown"] as const;
 
-export interface RunningRoute extends Timestamped, UserOwned {
+export interface CardioRoute extends Timestamped, UserOwned {
   id: EntityId;
   name: string;
   distanceMeters: number;
@@ -18,3 +18,5 @@ export interface RunningRoute extends Timestamped, UserOwned {
   isActive: boolean;
   notes: string | null;
 }
+
+export type RunningRoute = CardioRoute;

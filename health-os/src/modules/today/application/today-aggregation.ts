@@ -21,12 +21,13 @@ export interface TodayAggregationGoal {
   status: string;
 }
 
-export interface TodayAggregationRun {
+export interface TodayAggregationCardioSession {
   id: string;
   routeId: string | null;
+  activityType: string;
   runDate: Date;
   startedAt: Date | null;
-  distanceMeters: number;
+  distanceMeters: number | null;
 }
 
 export interface TodayAggregationStrengthSession {
@@ -47,7 +48,7 @@ export interface TodayAggregationRoute {
 
 export interface TodayAggregationInput<
   TGoal extends TodayAggregationGoal,
-  TRun extends TodayAggregationRun,
+  TCardioSession extends TodayAggregationCardioSession,
   TStrength extends TodayAggregationStrengthSession,
   TJournal extends TodayAggregationJournalEntry,
   TRoute extends TodayAggregationRoute
@@ -55,7 +56,7 @@ export interface TodayAggregationInput<
   user: TodayAggregationUser;
   date: Date;
   goals: TGoal[];
-  runs: TRun[];
+  cardioSessions: TCardioSession[];
   strengthSessions: TStrength[];
   journalEntries: TJournal[];
   routes: TRoute[];
@@ -98,15 +99,15 @@ export function getTodayEmptyStates(input: {
 
 export function aggregateTodayData<
   TGoal extends TodayAggregationGoal,
-  TRun extends TodayAggregationRun,
+  TCardioSession extends TodayAggregationCardioSession,
   TStrength extends TodayAggregationStrengthSession,
   TJournal extends TodayAggregationJournalEntry,
   TRoute extends TodayAggregationRoute
->(input: TodayAggregationInput<TGoal, TRun, TStrength, TJournal, TRoute>) {
+>(input: TodayAggregationInput<TGoal, TCardioSession, TStrength, TJournal, TRoute>) {
   const routeNameById = new Map(input.routes.map((route) => [route.id, route.name]));
   const weekRange = getMondayWeekRange(input.date, input.user.timezone);
-  const weeklyRuns = input.runs.filter((run) =>
-    isInRange(getActivityDate(run.runDate, run.startedAt), weekRange)
+  const weeklyCardioSessions = input.cardioSessions.filter((session) =>
+    isInRange(getActivityDate(session.runDate, session.startedAt), weekRange)
   );
   const weeklyStrengthSessions = input.strengthSessions.filter((session) =>
     isInRange(getActivityDate(session.sessionDate, session.startedAt), weekRange)
@@ -125,13 +126,13 @@ export function aggregateTodayData<
   const progressByGoalId = new Map(goalProgress.map((progress) => [progress.goalId, progress]));
   const focusGoal = chooseFocusGoal(input.goals);
   const recentActivity = sortRecentActivity([
-    ...input.runs.map((run) => ({
-      id: run.id,
-      type: "run" as const,
-      date: getActivityDate(run.runDate, run.startedAt),
-      href: `/running/${run.id}`,
-      item: run,
-      routeName: run.routeId ? (routeNameById.get(run.routeId) ?? "Unknown route") : null
+    ...input.cardioSessions.map((session) => ({
+      id: session.id,
+      type: "cardio" as const,
+      date: getActivityDate(session.runDate, session.startedAt),
+      href: `/cardio/${session.id}`,
+      item: session,
+      routeName: session.routeId ? (routeNameById.get(session.routeId) ?? "Unknown route") : null
     })),
     ...input.strengthSessions.map((session) => ({
       id: session.id,
@@ -158,8 +159,11 @@ export function aggregateTodayData<
     weeklyContext: {
       weekStart: weekRange.start,
       weekEnd: weekRange.end,
-      runningDistanceMeters: weeklyRuns.reduce((total, run) => total + run.distanceMeters, 0),
-      runCount: weeklyRuns.length,
+      cardioDistanceMeters: weeklyCardioSessions.reduce(
+        (total, session) => total + (session.distanceMeters ?? 0),
+        0
+      ),
+      cardioSessionCount: weeklyCardioSessions.length,
       strengthSessionCount: weeklyStrengthSessions.length,
       journalEntryCount: weeklyJournalEntries.length
     },

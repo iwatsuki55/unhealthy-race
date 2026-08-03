@@ -1,10 +1,10 @@
 import type { GoalDto, GoalProgressDto } from "@/modules/goals/domain";
 import type { JournalEntryDto } from "@/modules/journal/domain";
-import type { RunDto } from "@/modules/running/domain";
+import type { CardioSessionDto } from "@/modules/cardio/domain";
 import type { StrengthSessionDto } from "@/modules/strength/domain";
 
-export type TodayActivityType = "run" | "strength" | "journal";
-export type TodaySectionKey = "running" | "strength" | "goals" | "journal" | "routes";
+export type TodayActivityType = "cardio" | "strength" | "journal";
+export type TodaySectionKey = "cardio" | "strength" | "goals" | "journal" | "routes";
 
 export interface TodayUserContext {
   id: string;
@@ -27,8 +27,8 @@ export interface TodayRecentActivity {
   id: string;
   type: TodayActivityType;
   date: Date;
-  href: `/running/${string}` | `/strength/${string}` | `/journal/${string}`;
-  run?: RunDto & {
+  href: `/cardio/${string}` | `/strength/${string}` | `/journal/${string}`;
+  cardioSession?: CardioSessionDto & {
     routeName: string | null;
   };
   strengthSession?: StrengthSessionDto;
@@ -38,8 +38,8 @@ export interface TodayRecentActivity {
 export interface TodayWeeklyContext {
   weekStart: Date;
   weekEnd: Date;
-  runningDistanceMeters: number;
-  runCount: number;
+  cardioDistanceMeters: number;
+  cardioSessionCount: number;
   strengthSessionCount: number;
   journalEntryCount: number;
 }
@@ -57,7 +57,7 @@ export interface TodayHomeReadModel {
   focus: TodayFocus;
   activeGoals: GoalDto[];
   goalProgress: TodayGoalProgress[];
-  recentRuns: RunDto[];
+  recentCardioSessions: CardioSessionDto[];
   recentStrengthSessions: StrengthSessionDto[];
   recentJournalEntries: JournalEntryDto[];
   recentActivity: TodayRecentActivity[];

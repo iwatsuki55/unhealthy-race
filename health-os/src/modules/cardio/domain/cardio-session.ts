@@ -1,13 +1,16 @@
 import type { EntityId, Timestamped, UserOwned } from "@/core/shared";
 
-export interface Run extends Timestamped, UserOwned {
+import type { CardioActivityType } from "./cardio-activity";
+
+export interface CardioSession extends Timestamped, UserOwned {
   id: EntityId;
   routeId: EntityId | null;
+  activityType: CardioActivityType;
   runDate: Date;
   startedAt: Date | null;
   durationSeconds: number;
-  distanceMeters: number;
-  averagePaceSecondsPerKm: number;
+  distanceMeters: number | null;
+  averagePaceSecondsPerKm: number | null;
   averageHeartRate: number | null;
   maximumHeartRate: number | null;
   cadenceStepsPerMinute: number | null;
@@ -19,3 +22,5 @@ export interface Run extends Timestamped, UserOwned {
   perceivedEffort: number | null;
   notes: string | null;
 }
+
+export type Run = CardioSession;

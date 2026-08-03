@@ -87,16 +87,19 @@ field<T> is:
 Use the provided source image ids exactly. If a value is unclear, use null with low confidence.
 Return only a JSON object. Do not wrap it in markdown.`;
 
-const runPrompt = `You analyze multiple iPhone running screenshots as one running log import.
+const runPrompt = `You analyze multiple iPhone cardio workout screenshots as one cardio log import.
 
 Extract only information visible in the screenshots. Never invent missing values.
-Prioritize Apple Fitness, running app summaries, GPS workout summaries, and route screenshots.
+Prioritize Apple Fitness, Apple Workout, running, walking, cycling, hiking, rowing, swimming, stair climber, elliptical, GPS workout summaries, and route screenshots.
+Classify activityType as one of: outdoor_run, treadmill_run, outdoor_walk, treadmill_walk, exercise_bike, outdoor_cycling, hiking, rowing, swimming, stair_climber, elliptical, other.
 Convert distance to integer meters, duration to total seconds, and pace to seconds per kilometer.
 If a value is not visible, use null with low confidence.
+If activity type is unclear, use other with low confidence.
 
 Return JSON that matches this TypeScript shape exactly:
 {
   "title": field<string>,
+  "activityType": field<string>,
   "runDate": field<string>,
   "startTime": field<string>,
   "distanceMeters": field<number>,

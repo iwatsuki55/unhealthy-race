@@ -8,16 +8,21 @@ import {
   ratingSchema
 } from "@/core/shared";
 
-export const runSchema = z
+import { cardioActivityTypeValues, getCardioActivityConfig } from "./cardio-activity";
+
+export const cardioActivityTypeSchema = z.enum(cardioActivityTypeValues);
+
+export const cardioSessionSchema = z
   .object({
     id: nonEmptyStringSchema,
     userId: nonEmptyStringSchema,
     routeId: nonEmptyStringSchema.nullable(),
+    activityType: cardioActivityTypeSchema,
     runDate: z.date(),
     startedAt: z.date().nullable(),
     durationSeconds: positiveIntSchema,
-    distanceMeters: positiveIntSchema,
-    averagePaceSecondsPerKm: positiveIntSchema,
+    distanceMeters: positiveIntSchema.nullable(),
+    averagePaceSecondsPerKm: positiveIntSchema.nullable(),
     averageHeartRate: positiveIntSchema.nullable(),
     maximumHeartRate: positiveIntSchema.nullable(),
     cadenceStepsPerMinute: positiveIntSchema.nullable(),
@@ -32,21 +37,24 @@ export const runSchema = z
     updatedAt: z.date()
   })
   .refine(
-    (run) =>
-      run.averageHeartRate === null ||
-      run.maximumHeartRate === null ||
-      run.maximumHeartRate >= run.averageHeartRate,
+    (session) =>
+      session.averageHeartRate === null ||
+      session.maximumHeartRate === null ||
+      session.maximumHeartRate >= session.averageHeartRate,
     {
       message: "Maximum heart rate must be greater than or equal to average heart rate.",
       path: ["maximumHeartRate"]
     }
   );
 
-const runInputBaseSchema = z.object({
+const optionalDistanceSchema = positiveIntSchema.optional();
+
+const cardioSessionInputBaseSchema = z.object({
+  activityType: cardioActivityTypeSchema.default("outdoor_run"),
   runDate: dateStringSchema,
   startedAt: dateTimeStringSchema.optional(),
   durationSeconds: positiveIntSchema,
-  distanceMeters: positiveIntSchema,
+  distanceMeters: optionalDistanceSchema,
   routeId: nonEmptyStringSchema.optional(),
   averageHeartRate: positiveIntSchema.optional(),
   maximumHeartRate: positiveIntSchema.optional(),
@@ -60,30 +68,50 @@ const runInputBaseSchema = z.object({
   notes: z.string().trim().optional()
 });
 
-function hasValidHeartRateRange(run: { averageHeartRate?: number; maximumHeartRate?: number }) {
+function hasValidHeartRateRange(session: { averageHeartRate?: number; maximumHeartRate?: number }) {
   return (
-    run.averageHeartRate === undefined ||
-    run.maximumHeartRate === undefined ||
-    run.maximumHeartRate >= run.averageHeartRate
+    session.averageHeartRate === undefined ||
+    session.maximumHeartRate === undefined ||
+    session.maximumHeartRate >= session.averageHeartRate
   );
 }
 
-export const createRunInputSchema = runInputBaseSchema.refine(hasValidHeartRateRange, {
-  message: "Maximum heart rate must be greater than or equal to average heart rate.",
-  path: ["maximumHeartRate"]
-});
+function hasRequiredDistance(session: {
+  activityType: z.infer<typeof cardioActivityTypeSchema>;
+  distanceMeters?: number;
+}) {
+  const config = getCardioActivityConfig(session.activityType);
 
-export const updateRunInputSchema = runInputBaseSchema.partial().refine(hasValidHeartRateRange, {
-  message: "Maximum heart rate must be greater than or equal to average heart rate.",
-  path: ["maximumHeartRate"]
-});
+  return !config.requiresDistance || typeof session.distanceMeters === "number";
+}
 
-export const runFormSchema = z
+export const createCardioSessionInputSchema = cardioSessionInputBaseSchema
+  .refine(hasValidHeartRateRange, {
+    message: "Maximum heart rate must be greater than or equal to average heart rate.",
+    path: ["maximumHeartRate"]
+  })
+  .refine(hasRequiredDistance, {
+    message: "Distance is required for this cardio type.",
+    path: ["distanceMeters"]
+  });
+
+export const updateCardioSessionInputSchema = cardioSessionInputBaseSchema
+  .partial()
+  .refine(hasValidHeartRateRange, {
+    message: "Maximum heart rate must be greater than or equal to average heart rate.",
+    path: ["maximumHeartRate"]
+  });
+
+export const cardioSessionFormSchema = z
   .object({
+    activityType: cardioActivityTypeSchema.default("outdoor_run"),
     runDate: dateStringSchema,
     startedAt: z.string().trim().optional(),
     durationSeconds: z.coerce.number().int().positive(),
-    distanceMeters: z.coerce.number().int().positive(),
+    distanceMeters: z.preprocess(
+      (value) => (value === "" || value === null ? undefined : value),
+      z.coerce.number().int().positive().optional()
+    ),
     routeId: z.preprocess(
       (value) => (value === "" ? undefined : value),
       nonEmptyStringSchema.optional()
@@ -121,17 +149,30 @@ export const runFormSchema = z
     notes: z.string().trim().optional()
   })
   .refine(
-    (run) =>
-      run.averageHeartRate === undefined ||
-      run.maximumHeartRate === undefined ||
-      run.maximumHeartRate >= run.averageHeartRate,
+    (session) =>
+      session.averageHeartRate === undefined ||
+      session.maximumHeartRate === undefined ||
+      session.maximumHeartRate >= session.averageHeartRate,
     {
       message: "Maximum heart rate must be greater than or equal to average heart rate.",
       path: ["maximumHeartRate"]
     }
-  );
+  )
+  .refine(hasRequiredDistance, {
+    message: "Distance is required for this cardio type.",
+    path: ["distanceMeters"]
+  });
 
-export type RunDto = z.infer<typeof runSchema>;
-export type CreateRunInput = z.infer<typeof createRunInputSchema>;
-export type UpdateRunInput = z.infer<typeof updateRunInputSchema>;
-export type RunFormInput = z.infer<typeof runFormSchema>;
+export type CardioSessionDto = z.infer<typeof cardioSessionSchema>;
+export type CreateCardioSessionInput = z.infer<typeof createCardioSessionInputSchema>;
+export type UpdateCardioSessionInput = z.infer<typeof updateCardioSessionInputSchema>;
+export type CardioSessionFormInput = z.infer<typeof cardioSessionFormSchema>;
+
+export const runSchema = cardioSessionSchema;
+export const createRunInputSchema = createCardioSessionInputSchema;
+export const updateRunInputSchema = updateCardioSessionInputSchema;
+export const runFormSchema = cardioSessionFormSchema;
+export type RunDto = CardioSessionDto;
+export type CreateRunInput = CreateCardioSessionInput;
+export type UpdateRunInput = UpdateCardioSessionInput;
+export type RunFormInput = CardioSessionFormInput;

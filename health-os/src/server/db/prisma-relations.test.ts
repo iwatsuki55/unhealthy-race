@@ -37,7 +37,7 @@ dbTest("deleting a run does not delete its route", async () => {
       difficulty: "easy"
     }
   });
-  const run = await prisma.run.create({
+  const run = await prisma.cardioSession.create({
     data: {
       userId: user.id,
       routeId: route.id,
@@ -48,7 +48,7 @@ dbTest("deleting a run does not delete its route", async () => {
     }
   });
 
-  await prisma.run.delete({ where: { id: run.id } });
+  await prisma.cardioSession.delete({ where: { id: run.id } });
 
   assert.equal(await prisma.route.count({ where: { id: route.id } }), 1);
   await prisma.user.delete({ where: { id: user.id } });

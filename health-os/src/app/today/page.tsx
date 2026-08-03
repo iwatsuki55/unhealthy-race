@@ -20,15 +20,16 @@ import type {
   TodayRecentActivity
 } from "@/modules/today/application";
 import { todayQuery } from "@/modules/today/application";
+import { getCardioActivityConfig, getCardioActivityLabel } from "@/modules/cardio/domain";
 
 const primaryQuickActions: Array<{
   href: NextRoute;
   label: string;
   icon: LucideIcon;
 }> = [
-  { href: "/workout-import/new?type=running", label: "Import Run", icon: Upload },
+  { href: "/workout-import/new?type=cardio", label: "Import Cardio", icon: Upload },
   { href: "/workout-import/new", label: "Import Workout", icon: Upload },
-  { href: "/running/new", label: "Log Run", icon: Route },
+  { href: "/cardio/new", label: "Log Cardio", icon: Route },
   { href: "/strength/new", label: "Log Strength", icon: Dumbbell },
   { href: "/journal/new", label: "Add Journal Entry", icon: NotebookPen }
 ];
@@ -64,11 +65,15 @@ function formatLongDate(date: Date) {
   });
 }
 
-function formatDistance(meters: number) {
-  return `${metersToKilometersInput(meters)} km`;
+function formatDistance(meters: number | null | undefined) {
+  return typeof meters === "number" ? `${metersToKilometersInput(meters)} km` : "Not set";
 }
 
-function formatPace(secondsPerKm: number) {
+function formatPace(secondsPerKm: number | null | undefined) {
+  if (!secondsPerKm) {
+    return "Not set";
+  }
+
   const minutes = Math.floor(secondsPerKm / 60);
   const seconds = secondsPerKm % 60;
 
@@ -238,7 +243,9 @@ function TodayFocus({ model }: { model: TodayHomeReadModel }) {
 function WeeklySummary({ model }: { model: TodayHomeReadModel }) {
   const summary = model.weeklyContext;
   const hasNoWeeklyActivity =
-    summary.runCount === 0 && summary.strengthSessionCount === 0 && summary.journalEntryCount === 0;
+    summary.cardioSessionCount === 0 &&
+    summary.strengthSessionCount === 0 &&
+    summary.journalEntryCount === 0;
 
   return (
     <section aria-labelledby="weekly-summary-title" className="grid gap-3">
@@ -252,14 +259,14 @@ function WeeklySummary({ model }: { model: TodayHomeReadModel }) {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Running distance</p>
+          <p className="text-sm text-muted-foreground">Cardio distance</p>
           <p className="mt-2 text-xl font-semibold">
-            {formatDistance(summary.runningDistanceMeters)}
+            {formatDistance(summary.cardioDistanceMeters)}
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Runs</p>
-          <p className="mt-2 text-xl font-semibold">{summary.runCount}</p>
+          <p className="text-sm text-muted-foreground">Cardio sessions</p>
+          <p className="mt-2 text-xl font-semibold">{summary.cardioSessionCount}</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">Strength sessions</p>
@@ -273,10 +280,10 @@ function WeeklySummary({ model }: { model: TodayHomeReadModel }) {
       {hasNoWeeklyActivity ? (
         <div className="grid gap-3 md:grid-cols-3">
           <EmptyState
-            body="Log your first run to start building your training history."
-            href="/running/new"
-            label="Log run"
-            title="No runs this week"
+            body="Log your first cardio session to start building your training history."
+            href="/cardio/new"
+            label="Log cardio"
+            title="No cardio this week"
           />
           <EmptyState
             body="Add your first strength session."
@@ -297,7 +304,7 @@ function WeeklySummary({ model }: { model: TodayHomeReadModel }) {
 }
 
 function ActivityIcon({ type }: { type: TodayRecentActivity["type"] }) {
-  if (type === "run") {
+  if (type === "cardio") {
     return <Route className="h-4 w-4 text-primary" aria-hidden="true" />;
   }
 
@@ -309,16 +316,17 @@ function ActivityIcon({ type }: { type: TodayRecentActivity["type"] }) {
 }
 
 function ActivityDetails({ activity }: { activity: TodayRecentActivity }) {
-  if (activity.run) {
+  if (activity.cardioSession) {
+    const session = activity.cardioSession;
+    const config = getCardioActivityConfig(session.activityType);
+
     return (
       <>
-        <span>{formatDistance(activity.run.distanceMeters)}</span>
-        <span>{secondsToDurationInput(activity.run.durationSeconds)}</span>
-        <span>{formatPace(activity.run.averagePaceSecondsPerKm)}</span>
-        <span>
-          {activity.run.averageHeartRate ? `${activity.run.averageHeartRate} bpm avg` : "No HR"}
-        </span>
-        <span>{activity.run.routeName ?? "No route"}</span>
+        <span>{formatDistance(session.distanceMeters)}</span>
+        <span>{secondsToDurationInput(session.durationSeconds)}</span>
+        <span>{config.showsPace ? formatPace(session.averagePaceSecondsPerKm) : "No pace"}</span>
+        <span>{session.averageHeartRate ? `${session.averageHeartRate} bpm avg` : "No HR"}</span>
+        <span>{session.routeName ?? "No route"}</span>
       </>
     );
   }
@@ -367,7 +375,7 @@ function RecentActivity({ model }: { model: TodayHomeReadModel }) {
       <h2 id="recent-activity-title" className="text-lg font-semibold tracking-normal">
         Recent activity
       </h2>
-      <SectionErrorNotice model={model} section="running" />
+      <SectionErrorNotice model={model} section="cardio" />
       <SectionErrorNotice model={model} section="strength" />
       <SectionErrorNotice model={model} section="journal" />
       <SectionErrorNotice model={model} section="routes" />
@@ -383,8 +391,8 @@ function RecentActivity({ model }: { model: TodayHomeReadModel }) {
                 <div className="flex min-w-0 items-center gap-2">
                   <ActivityIcon type={activity.type} />
                   <h3 className="truncate text-base font-semibold tracking-normal">
-                    {activity.type === "run"
-                      ? "Run"
+                    {activity.type === "cardio" && activity.cardioSession
+                      ? getCardioActivityLabel(activity.cardioSession.activityType)
                       : activity.type === "strength"
                         ? "Strength"
                         : "Journal"}
@@ -402,9 +410,9 @@ function RecentActivity({ model }: { model: TodayHomeReadModel }) {
         </div>
       ) : (
         <EmptyState
-          body="Log your first run, strength session, or journal entry to start building your daily history."
-          href="/running/new"
-          label="Log your first run"
+          body="Log your first cardio session, strength session, or journal entry to start building your daily history."
+          href="/cardio/new"
+          label="Log your first cardio"
           title="No recent activity yet"
         />
       )}

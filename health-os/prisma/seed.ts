@@ -52,7 +52,7 @@ async function main() {
     }
   });
 
-  await prisma.run.createMany({
+  await prisma.cardioSession.createMany({
     data: [
       {
         userId: user.id,

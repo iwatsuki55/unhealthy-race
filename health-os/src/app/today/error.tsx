@@ -12,7 +12,7 @@ export default function TodayError() {
         The daily overview hit an unexpected problem. Your module pages are still available.
       </p>
       <Button asChild className="mt-5">
-        <Link href="/running">Open Running Log</Link>
+        <Link href="/cardio">Open Cardio Log</Link>
       </Button>
     </div>
   );

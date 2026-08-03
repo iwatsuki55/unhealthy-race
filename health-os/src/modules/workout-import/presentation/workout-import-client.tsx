@@ -26,7 +26,7 @@ const maxImages = 10;
 const storageKey = "health-os.workout-import.stage-2";
 const staleStorageKeys = ["health-os.workout-import.stage-1"];
 const acceptedImageTypes = "image/*";
-type ImportType = "strength" | "running";
+type ImportType = "strength" | "cardio";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
   images: Array<Omit<ImportedImage, "previewUrl">>;
@@ -230,13 +230,18 @@ function RunDraftReview({
     <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
       <div>
         <p className="text-sm font-medium text-muted-foreground">Review draft</p>
-        <h2 className="mt-1 text-xl font-semibold tracking-normal">Run Import Draft</h2>
+        <h2 className="mt-1 text-xl font-semibold tracking-normal">Cardio Import Draft</h2>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <FieldRow label="Title" value={draft.title.value} confidence={draft.title.confidence} />
         <FieldRow
-          label="Run date"
+          label="Activity type"
+          value={draft.activityType.value}
+          confidence={draft.activityType.confidence}
+        />
+        <FieldRow
+          label="Workout date"
           value={draft.runDate.value}
           confidence={draft.runDate.confidence}
         />
@@ -312,7 +317,7 @@ function RunDraftReview({
         ) : null}
         <Button className="w-full" disabled={isSaving} type="button" onClick={onSave}>
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-          {isSaving ? "Saving..." : "Save to Running"}
+          {isSaving ? "Saving..." : "Save to Cardio"}
         </Button>
       </div>
     </section>
@@ -471,8 +476,8 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
 
     try {
       const response = await fetch(
-        importType === "running"
-          ? "/api/workout-import/analyze-run"
+        importType === "cardio"
+          ? "/api/workout-import/analyze-cardio"
           : "/api/workout-import/analyze",
         {
           method: "POST",
@@ -486,9 +491,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
       }
       const draft = payload.draft;
 
-      setSession((current) =>
-        attachDraftToImportSession(current, draft, payload.warnings ?? [])
-      );
+      setSession((current) => attachDraftToImportSession(current, draft, payload.warnings ?? []));
     } catch (error) {
       setSession((current) =>
         current.status === "analyzing" ? { ...current, status: "failed" } : current
@@ -511,8 +514,8 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
 
     try {
       const response = await fetch(
-        importType === "running"
-          ? "/api/workout-import/run"
+        importType === "cardio"
+          ? "/api/workout-import/cardio"
           : "/api/workout-import/strength-session",
         {
           method: "POST",
@@ -558,7 +561,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
         <div className="grid gap-2">
           <p className="text-sm font-medium text-muted-foreground">Stage 1 import session</p>
           <h2 className="text-xl font-semibold tracking-normal">
-            Upload {importType === "running" ? "run" : "workout"} screenshots
+            Upload {importType === "cardio" ? "cardio" : "workout"} screenshots
           </h2>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
             Select up to 10 screenshots. Images stay in this browser session and are sent only when
@@ -649,7 +652,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
               </div>
             ) : session.status === "review_required" ? (
               <p className="text-sm font-medium text-foreground">
-                Draft ready. Review the extracted {importType === "running" ? "run" : "workout"}{" "}
+                Draft ready. Review the extracted {importType === "cardio" ? "cardio" : "workout"}{" "}
                 below before saving.
               </p>
             ) : session.status === "failed" ? (
@@ -799,7 +802,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
           explicitly requested by the user.
         </p>
         <Button asChild className="mt-4" variant="outline">
-          <Link href={importType === "running" ? "/running/new" : "/strength/new"}>
+          <Link href={importType === "cardio" ? "/cardio/new" : "/strength/new"}>
             Switch to manual entry
           </Link>
         </Button>

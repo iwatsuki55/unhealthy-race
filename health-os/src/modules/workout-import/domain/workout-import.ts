@@ -66,6 +66,7 @@ export interface WorkoutImportDraft {
 
 export interface RunImportDraft {
   title: ImportField<string>;
+  activityType: ImportField<string>;
   runDate: ImportField<string>;
   startTime: ImportField<string>;
   distanceMeters: ImportField<number>;

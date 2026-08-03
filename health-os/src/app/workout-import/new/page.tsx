@@ -10,15 +10,15 @@ interface NewWorkoutImportPageProps {
 
 export default async function NewWorkoutImportPage({ searchParams }: NewWorkoutImportPageProps) {
   const { type } = await searchParams;
-  const importType = type === "running" ? "running" : "strength";
-  const backHref = importType === "running" ? "/running" : "/strength";
-  const title = importType === "running" ? "Import Run" : "Import Workout";
+  const importType = type === "cardio" || type === "running" ? "cardio" : "strength";
+  const backHref = importType === "cardio" ? "/cardio" : "/strength";
+  const title = importType === "cardio" ? "Import Cardio" : "Import Workout";
 
   return (
     <div className="space-y-8">
       <div>
         <Link className="text-sm text-muted-foreground hover:text-foreground" href={backHref}>
-          Back to {importType === "running" ? "running" : "strength"}
+          Back to {importType === "cardio" ? "cardio" : "strength"}
         </Link>
         <h1 className="mt-3 text-3xl font-semibold tracking-normal">{title}</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">

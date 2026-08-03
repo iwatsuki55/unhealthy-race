@@ -16,7 +16,7 @@ model User {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   routes         Route[]
-  runs           Run[]
+  cardioSessions CardioSession[]
   strengthLogs   StrengthSession[]
   goals          Goal[]
   journalEntries JournalEntry[]
@@ -25,37 +25,38 @@ model User {
 }
 
 model Route {
-  id                       String      @id @default(cuid())
+  id                       String          @id @default(cuid())
   userId                   String
   name                     String
   distanceMeters           Int
   estimatedDurationSeconds Int?
   elevationGainMeters      Int?
   description              String?
-  surfaceType              SurfaceType @default(unknown)
-  difficulty               Difficulty  @default(moderate)
+  surfaceType              SurfaceType     @default(unknown)
+  difficulty               Difficulty      @default(moderate)
   googleMapsUrl            String?
-  isFavorite               Boolean     @default(false)
-  isActive                 Boolean     @default(true)
+  isFavorite               Boolean         @default(false)
+  isActive                 Boolean         @default(true)
   notes                    String?
-  createdAt                DateTime    @default(now())
-  updatedAt                DateTime    @updatedAt
-  user                     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  runs                     Run[]
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+  user                     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardioSessions           CardioSession[]
 
   @@index([userId])
   @@map("routes")
 }
 
-model Run {
-  id                      String    @id @default(cuid())
+model CardioSession {
+  id                      String             @id @default(cuid())
   userId                  String
   routeId                 String?
+  activityType            CardioActivityType @default(outdoor_run)
   runDate                 DateTime
   startedAt               DateTime?
   durationSeconds         Int
-  distanceMeters          Int
-  averagePaceSecondsPerKm Int
+  distanceMeters          Int?
+  averagePaceSecondsPerKm Int?
   averageHeartRate        Int?
   maximumHeartRate        Int?
   cadenceStepsPerMinute   Int?
@@ -66,10 +67,10 @@ model Run {
   screenshotAttachmentRef String?
   perceivedEffort         Int?
   notes                   String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  route                   Route?    @relation(fields: [routeId], references: [id], onDelete: SetNull)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  user                    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route                   Route?             @relation(fields: [routeId], references: [id], onDelete: SetNull)
 
   @@index([userId, runDate])
   @@index([routeId])
@@ -191,6 +192,21 @@ enum Difficulty {
   easy
   moderate
   hard
+}
+
+enum CardioActivityType {
+  outdoor_run
+  treadmill_run
+  outdoor_walk
+  treadmill_walk
+  exercise_bike
+  outdoor_cycling
+  hiking
+  rowing
+  swimming
+  stair_climber
+  elliptical
+  other
 }
 
 enum WorkoutType {

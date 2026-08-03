@@ -1,12 +1,12 @@
 import type { RouteRepository } from "@/modules/routes/application";
+import type { CardioSessionRepository } from "@/modules/cardio/application";
 import type { GoalRepository } from "@/modules/goals/application";
 import type { JournalEntryRepository } from "@/modules/journal/application";
-import type { RunRepository } from "@/modules/running/application";
 import type { StrengthSessionRepository } from "@/modules/strength/application";
+import { cardioSessionRepository } from "@/modules/cardio/infrastructure";
 import { goalRepository } from "@/modules/goals/infrastructure";
 import { journalEntryRepository } from "@/modules/journal/infrastructure";
 import { routeRepository } from "@/modules/routes/infrastructure";
-import { runRepository } from "@/modules/running/infrastructure";
 import { strengthSessionRepository } from "@/modules/strength/infrastructure";
 
 import { aggregateTodayData } from "./today-aggregation";
@@ -19,7 +19,7 @@ import type {
 } from "./today-read-model";
 
 interface TodayHomeQueryDependencies {
-  runs: RunRepository;
+  cardioSessions: CardioSessionRepository;
   strengthSessions: StrengthSessionRepository;
   goals: GoalRepository;
   journalEntries: JournalEntryRepository;
@@ -83,35 +83,41 @@ export class TodayHomeQuery implements TodayQuery {
 
   async getToday(user: TodayUserContext, date: Date): Promise<TodayHomeReadModel> {
     const errors: TodaySectionError[] = [];
-    const [runs, strengthSessions, activeGoals, journalEntries, routes] = await Promise.all([
-      safeQuery("running", () => this.dependencies.runs.listByUser(user.id), [], errors),
-      safeQuery(
-        "strength",
-        () => this.dependencies.strengthSessions.listByUser(user.id),
-        [],
-        errors
-      ),
-      safeQuery("goals", () => this.dependencies.goals.listActiveByUser(user.id), [], errors),
-      safeQuery("journal", () => this.dependencies.journalEntries.listByUser(user.id), [], errors),
-      safeQuery("routes", () => this.dependencies.routes.listByUser(user.id), [], errors)
-    ]);
+    const [cardioSessions, strengthSessions, activeGoals, journalEntries, routes] =
+      await Promise.all([
+        safeQuery("cardio", () => this.dependencies.cardioSessions.listByUser(user.id), [], errors),
+        safeQuery(
+          "strength",
+          () => this.dependencies.strengthSessions.listByUser(user.id),
+          [],
+          errors
+        ),
+        safeQuery("goals", () => this.dependencies.goals.listActiveByUser(user.id), [], errors),
+        safeQuery(
+          "journal",
+          () => this.dependencies.journalEntries.listByUser(user.id),
+          [],
+          errors
+        ),
+        safeQuery("routes", () => this.dependencies.routes.listByUser(user.id), [], errors)
+      ]);
     const aggregation = aggregateTodayData({
       user,
       date,
       goals: activeGoals,
-      runs,
+      cardioSessions,
       strengthSessions,
       journalEntries,
       routes
     });
     const recentActivity = aggregation.recentActivity.map((activity) => {
-      if (activity.type === "run") {
+      if (activity.type === "cardio") {
         return {
           id: activity.id,
           type: activity.type,
           date: activity.date,
-          href: activity.href as `/running/${string}`,
-          run: {
+          href: activity.href as `/cardio/${string}`,
+          cardioSession: {
             ...activity.item,
             routeName: activity.routeName
           }
@@ -148,7 +154,7 @@ export class TodayHomeQuery implements TodayQuery {
       },
       activeGoals: activeGoals.slice(0, 3),
       goalProgress: aggregation.goalProgress,
-      recentRuns: runs.slice(0, 5),
+      recentCardioSessions: cardioSessions.slice(0, 5),
       recentStrengthSessions: strengthSessions.slice(0, 5),
       recentJournalEntries: journalEntries.slice(0, 5),
       recentActivity,
@@ -160,7 +166,7 @@ export class TodayHomeQuery implements TodayQuery {
 }
 
 export const todayQuery = new TodayHomeQuery({
-  runs: runRepository,
+  cardioSessions: cardioSessionRepository,
   strengthSessions: strengthSessionRepository,
   goals: goalRepository,
   journalEntries: journalEntryRepository,

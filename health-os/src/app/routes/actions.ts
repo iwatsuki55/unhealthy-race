@@ -8,7 +8,7 @@ import { durationInputToSeconds, kilometersInputToMeters } from "@/lib/format";
 import { routeFormSchema } from "@/modules/routes/domain";
 import { shouldDeactivateRouteOnDelete } from "@/modules/routes/domain/route-deletion-policy";
 import { routeRepository } from "@/modules/routes/infrastructure";
-import { runRepository } from "@/modules/running/infrastructure";
+import { runRepository } from "@/modules/cardio/infrastructure";
 
 function getBoolean(formData: FormData, key: string) {
   return formData.get(key) === "on";
@@ -61,7 +61,7 @@ export async function deleteRouteAction(routeId: string) {
 
   revalidatePath("/routes");
   revalidatePath(`/routes/${routeId}`);
-  revalidatePath("/running");
+  revalidatePath("/cardio");
   revalidatePath("/today");
   redirect("/routes");
 }

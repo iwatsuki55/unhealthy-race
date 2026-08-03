@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUserId } from "@/core/application/current-user";
 import { durationInputToSeconds, kilometersInputToMeters } from "@/lib/format";
-import type { CreateRunInput, UpdateRunInput } from "@/modules/running/domain";
-import { runFormSchema } from "@/modules/running/domain";
-import { runRepository } from "@/modules/running/infrastructure";
+import type { CreateCardioSessionInput, UpdateCardioSessionInput } from "@/modules/cardio/domain";
+import { cardioSessionFormSchema } from "@/modules/cardio/domain";
+import { cardioSessionRepository } from "@/modules/cardio/infrastructure";
 
 function getOptionalString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -23,8 +23,9 @@ function toIsoDateTimeWithOffset(value: string | undefined) {
   return `${value}:00+09:00`;
 }
 
-function parseRunFormData(formData: FormData): CreateRunInput {
-  const input = runFormSchema.parse({
+function parseCardioSessionFormData(formData: FormData): CreateCardioSessionInput {
+  const input = cardioSessionFormSchema.parse({
+    activityType: formData.get("activityType"),
     runDate: formData.get("runDate"),
     startedAt: getOptionalString(formData, "startedAt"),
     durationSeconds: durationInputToSeconds(formData.get("duration")),
@@ -50,28 +51,32 @@ function parseRunFormData(formData: FormData): CreateRunInput {
 
 export async function createRunAction(formData: FormData) {
   const userId = await getCurrentUserId();
-  const input = parseRunFormData(formData);
-  const run = await runRepository.create(userId, input);
+  const input = parseCardioSessionFormData(formData);
+  const session = await cardioSessionRepository.create(userId, input);
 
-  revalidatePath("/running");
-  redirect(`/running/${run.id}`);
+  revalidatePath("/cardio");
+  redirect(`/cardio/${session.id}`);
 }
 
-export async function updateRunAction(runId: string, formData: FormData) {
+export async function updateRunAction(sessionId: string, formData: FormData) {
   const userId = await getCurrentUserId();
-  const input: UpdateRunInput = parseRunFormData(formData);
-  const run = await runRepository.update(userId, runId, input);
+  const input: UpdateCardioSessionInput = parseCardioSessionFormData(formData);
+  const session = await cardioSessionRepository.update(userId, sessionId, input);
 
-  revalidatePath("/running");
-  revalidatePath(`/running/${run.id}`);
-  redirect(`/running/${run.id}`);
+  revalidatePath("/cardio");
+  revalidatePath(`/cardio/${session.id}`);
+  redirect(`/cardio/${session.id}`);
 }
 
-export async function deleteRunAction(runId: string) {
+export async function deleteRunAction(sessionId: string) {
   const userId = await getCurrentUserId();
 
-  await runRepository.delete(userId, runId);
+  await cardioSessionRepository.delete(userId, sessionId);
 
-  revalidatePath("/running");
-  redirect("/running");
+  revalidatePath("/cardio");
+  redirect("/cardio");
 }
+
+export const createCardioSessionAction = createRunAction;
+export const updateCardioSessionAction = updateRunAction;
+export const deleteCardioSessionAction = deleteRunAction;
