@@ -100,6 +100,17 @@ test("getCardioImportDraftSaveIssue requires review for low-confidence or ambigu
   );
 });
 
+test("getCardioImportDraftSaveIssue blocks suspicious default 2020 dates", () => {
+  assert.match(
+    getCardioImportDraftSaveIssue(
+      draft({
+        runDate: field("Aug 7, 2020", "high")
+      })
+    ) ?? "",
+    /default 2020/
+  );
+});
+
 test("current-day imports keep the detected year when present", () => {
   const input = mapRunImportDraftToRunInput(
     draft({

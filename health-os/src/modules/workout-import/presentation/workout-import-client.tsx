@@ -23,8 +23,8 @@ import type {
 } from "@/modules/workout-import/domain";
 
 const maxImages = 10;
-const storageKey = "health-os.workout-import.stage-2";
-const staleStorageKeys = ["health-os.workout-import.stage-1"];
+const storageKey = "health-os.workout-import.stage-3";
+const staleStorageKeys = ["health-os.workout-import.stage-1", "health-os.workout-import.stage-2"];
 const acceptedImageTypes = "image/*";
 type ImportType = "strength" | "cardio";
 
@@ -83,11 +83,13 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
 function FieldRow({
   label,
   value,
-  confidence
+  confidence,
+  onValueChange
 }: {
   label: string;
   value: number | string | null;
   confidence: string;
+  onValueChange?: (value: string) => void;
 }) {
   return (
     <label className="grid gap-2 text-sm font-medium text-muted-foreground">
@@ -97,8 +99,9 @@ function FieldRow({
       </span>
       <input
         className="h-11 rounded-md border border-input bg-background px-3 text-base text-foreground outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
-        defaultValue={value ?? ""}
         placeholder="Not detected"
+        {...(onValueChange ? { value: value ?? "" } : { defaultValue: value ?? "" })}
+        onChange={(event) => onValueChange?.(event.currentTarget.value)}
       />
     </label>
   );
@@ -219,12 +222,14 @@ function RunDraftReview({
   draft,
   isSaving,
   saveError,
-  onSave
+  onSave,
+  onFieldChange
 }: {
   draft: RunImportDraft;
   isSaving: boolean;
   saveError: string | null;
   onSave: () => void;
+  onFieldChange: (key: keyof RunImportDraft, value: string) => void;
 }) {
   return (
     <section className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:p-5">
@@ -234,78 +239,107 @@ function RunDraftReview({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <FieldRow label="Title" value={draft.title.value} confidence={draft.title.confidence} />
+        <FieldRow
+          label="Title"
+          value={draft.title.value}
+          confidence={draft.title.confidence}
+          onValueChange={(value) => onFieldChange("title", value)}
+        />
         <FieldRow
           label="Activity type"
           value={draft.activityType.value}
           confidence={draft.activityType.confidence}
+          onValueChange={(value) => onFieldChange("activityType", value)}
         />
         <FieldRow
           label="Workout date"
           value={draft.runDate.value}
           confidence={draft.runDate.confidence}
+          onValueChange={(value) => onFieldChange("runDate", value)}
         />
         <FieldRow
           label="Start time"
           value={draft.startTime.value}
           confidence={draft.startTime.confidence}
+          onValueChange={(value) => onFieldChange("startTime", value)}
         />
         <FieldRow
           label="Distance meters"
           value={draft.distanceMeters.value}
           confidence={draft.distanceMeters.confidence}
+          onValueChange={(value) => onFieldChange("distanceMeters", value)}
         />
         <FieldRow
           label="Duration seconds"
           value={draft.durationSeconds.value}
           confidence={draft.durationSeconds.confidence}
+          onValueChange={(value) => onFieldChange("durationSeconds", value)}
         />
         <FieldRow
           label="Avg pace sec/km"
           value={draft.averagePaceSecondsPerKm.value}
           confidence={draft.averagePaceSecondsPerKm.confidence}
+          onValueChange={(value) => onFieldChange("averagePaceSecondsPerKm", value)}
         />
         <FieldRow
           label="Avg HR"
           value={draft.averageHeartRate.value}
           confidence={draft.averageHeartRate.confidence}
+          onValueChange={(value) => onFieldChange("averageHeartRate", value)}
         />
         <FieldRow
           label="Max HR"
           value={draft.maximumHeartRate.value}
           confidence={draft.maximumHeartRate.confidence}
+          onValueChange={(value) => onFieldChange("maximumHeartRate", value)}
         />
         <FieldRow
           label="Cadence"
           value={draft.cadenceStepsPerMinute.value}
           confidence={draft.cadenceStepsPerMinute.confidence}
+          onValueChange={(value) => onFieldChange("cadenceStepsPerMinute", value)}
         />
         <FieldRow
           label="Calories"
           value={draft.calories.value}
           confidence={draft.calories.confidence}
+          onValueChange={(value) => onFieldChange("calories", value)}
         />
         <FieldRow
           label="Temperature"
           value={draft.temperatureCelsius.value}
           confidence={draft.temperatureCelsius.confidence}
+          onValueChange={(value) => onFieldChange("temperatureCelsius", value)}
         />
         <FieldRow
           label="Humidity"
           value={draft.humidityPercent.value}
           confidence={draft.humidityPercent.confidence}
+          onValueChange={(value) => onFieldChange("humidityPercent", value)}
         />
-        <FieldRow label="Shoes" value={draft.shoes.value} confidence={draft.shoes.confidence} />
+        <FieldRow
+          label="Shoes"
+          value={draft.shoes.value}
+          confidence={draft.shoes.confidence}
+          onValueChange={(value) => onFieldChange("shoes", value)}
+        />
         <FieldRow
           label="RPE"
           value={draft.perceivedEffort.value}
           confidence={draft.perceivedEffort.confidence}
+          onValueChange={(value) => onFieldChange("perceivedEffort", value)}
         />
-        <FieldRow label="Notes" value={draft.notes.value} confidence={draft.notes.confidence} />
+        <FieldRow
+          label="Notes"
+          value={draft.notes.value}
+          confidence={draft.notes.confidence}
+          onValueChange={(value) => onFieldChange("notes", value)}
+        />
         <FieldRow
           label="Source"
           value={draft.sourceApplication.value}
           confidence={draft.sourceApplication.confidence}
+          onValueChange={(value) => onFieldChange("sourceApplication", value)}
         />
       </div>
 
@@ -326,6 +360,35 @@ function RunDraftReview({
 
 function isRunDraft(draft: RunImportDraft | WorkoutImportDraft): draft is RunImportDraft {
   return "distanceMeters" in draft && "runDate" in draft;
+}
+
+const numericRunDraftKeys = new Set<keyof RunImportDraft>([
+  "distanceMeters",
+  "durationSeconds",
+  "averagePaceSecondsPerKm",
+  "averageHeartRate",
+  "maximumHeartRate",
+  "cadenceStepsPerMinute",
+  "calories",
+  "temperatureCelsius",
+  "humidityPercent",
+  "perceivedEffort"
+]);
+
+function parseDraftFieldValue(key: keyof RunImportDraft, value: string) {
+  const trimmed = value.trim();
+
+  if (trimmed === "") {
+    return null;
+  }
+
+  if (!numericRunDraftKeys.has(key)) {
+    return value;
+  }
+
+  const numericValue = Number(trimmed);
+
+  return Number.isFinite(numericValue) ? numericValue : null;
 }
 
 export function WorkoutImportClient({ importType = "strength" }: { importType?: ImportType }) {
@@ -444,6 +507,36 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
       return next;
     });
     setAnalysisError(null);
+  }
+
+  function updateRunDraftField(key: keyof RunImportDraft, value: string) {
+    setSession((current) => {
+      const draft = current.extractionResult;
+
+      if (!draft || !isRunDraft(draft)) {
+        return current;
+      }
+
+      const field = draft[key];
+
+      if (!field || typeof field !== "object" || !("confidence" in field)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        extractionResult: {
+          ...draft,
+          [key]: {
+            ...field,
+            value: parseDraftFieldValue(key, value),
+            confidence: "high",
+            conflict: false
+          }
+        }
+      };
+    });
+    setSaveError(null);
   }
 
   async function analyze() {
@@ -781,6 +874,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
               draft={session.extractionResult}
               isSaving={isSaving}
               saveError={saveError}
+              onFieldChange={updateRunDraftField}
               onSave={saveDraft}
             />
           ) : (

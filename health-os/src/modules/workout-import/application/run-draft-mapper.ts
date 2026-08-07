@@ -120,8 +120,14 @@ function getDateFieldSaveIssue(field: ImportField<string>) {
     return "Workout date has conflicting extracted values. Please review before saving.";
   }
 
-  if (!normalizeCardioImportDate(field.value)) {
+  const normalizedDate = normalizeCardioImportDate(field.value);
+
+  if (!normalizedDate) {
     return "Workout date must include an explicit year before saving.";
+  }
+
+  if (normalizedDate.startsWith("2020-")) {
+    return "Workout date looks like a default 2020 year. Please correct the date before saving.";
   }
 
   return null;
