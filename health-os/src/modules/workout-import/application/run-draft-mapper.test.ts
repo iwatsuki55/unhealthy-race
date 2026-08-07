@@ -111,6 +111,33 @@ test("getCardioImportDraftSaveIssue blocks suspicious default 2020 dates", () =>
   );
 });
 
+test("getCardioImportDraftSaveIssue blocks unusual unreviewed years like 2023", () => {
+  assert.match(
+    getCardioImportDraftSaveIssue(
+      draft({
+        runDate: field("Aug 8, 2023", "high")
+      }),
+      { now: new Date("2026-08-08T00:00:00.000+09:00"), timezone: "Asia/Tokyo" }
+    ) ?? "",
+    /2023/
+  );
+});
+
+test("getCardioImportDraftSaveIssue allows unusual years after user review", () => {
+  assert.equal(
+    getCardioImportDraftSaveIssue(
+      draft({
+        runDate: {
+          ...field("2023-08-08", "high"),
+          reviewed: true
+        }
+      }),
+      { now: new Date("2026-08-08T00:00:00.000+09:00"), timezone: "Asia/Tokyo" }
+    ),
+    null
+  );
+});
+
 test("current-day imports keep the detected year when present", () => {
   const input = mapRunImportDraftToRunInput(
     draft({

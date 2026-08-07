@@ -8,7 +8,8 @@ function importFieldSchema<T extends z.ZodType>(valueSchema: T) {
     confidence: confidenceSchema,
     sourceImageIds: z.array(z.string()),
     alternatives: z.array(valueSchema).optional(),
-    conflict: z.boolean().optional()
+    conflict: z.boolean().optional(),
+    reviewed: z.boolean().optional()
   });
 }
 

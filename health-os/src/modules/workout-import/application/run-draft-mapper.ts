@@ -101,8 +101,25 @@ export function normalizeCardioImportDate(value: string | null) {
   return undefined;
 }
 
-export function getCardioImportDraftSaveIssue(draft: RunImportDraft) {
-  const dateIssue = getDateFieldSaveIssue(draft.runDate);
+interface CardioImportSaveIssueOptions {
+  now?: Date;
+  timezone?: string;
+}
+
+function getCurrentYear(options: CardioImportSaveIssueOptions) {
+  return Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: options.timezone ?? "Asia/Tokyo",
+      year: "numeric"
+    }).format(options.now ?? new Date())
+  );
+}
+
+export function getCardioImportDraftSaveIssue(
+  draft: RunImportDraft,
+  options: CardioImportSaveIssueOptions = {}
+) {
+  const dateIssue = getDateFieldSaveIssue(draft.runDate, options);
 
   if (dateIssue) {
     return dateIssue;
@@ -111,7 +128,7 @@ export function getCardioImportDraftSaveIssue(draft: RunImportDraft) {
   return null;
 }
 
-function getDateFieldSaveIssue(field: ImportField<string>) {
+function getDateFieldSaveIssue(field: ImportField<string>, options: CardioImportSaveIssueOptions) {
   if (field.confidence === "low") {
     return "Workout date is low confidence. Please review the screenshot date before saving.";
   }
@@ -128,6 +145,13 @@ function getDateFieldSaveIssue(field: ImportField<string>) {
 
   if (normalizedDate.startsWith("2020-")) {
     return "Workout date looks like a default 2020 year. Please correct the date before saving.";
+  }
+
+  const extractedYear = Number(normalizedDate.slice(0, 4));
+  const currentYear = getCurrentYear(options);
+
+  if (!field.reviewed && Math.abs(extractedYear - currentYear) > 1) {
+    return `Workout date year ${extractedYear} looks unusual. Please tap the date field, confirm the year, and save again.`;
   }
 
   return null;

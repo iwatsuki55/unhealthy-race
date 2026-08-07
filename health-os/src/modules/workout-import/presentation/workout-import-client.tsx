@@ -252,7 +252,7 @@ function RunDraftReview({
           onValueChange={(value) => onFieldChange("activityType", value)}
         />
         <FieldRow
-          label="Workout date"
+          label="Workout date - confirm year"
           value={draft.runDate.value}
           confidence={draft.runDate.confidence}
           onValueChange={(value) => onFieldChange("runDate", value)}
@@ -531,7 +531,8 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
             ...field,
             value: parseDraftFieldValue(key, value),
             confidence: "high",
-            conflict: false
+            conflict: false,
+            reviewed: true
           }
         }
       };

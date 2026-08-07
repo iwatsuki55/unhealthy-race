@@ -31,6 +31,7 @@ export interface ImportField<T> {
   sourceImageIds: string[];
   alternatives?: T[];
   conflict?: boolean;
+  reviewed?: boolean;
 }
 
 export interface WorkoutImportSetDraft {

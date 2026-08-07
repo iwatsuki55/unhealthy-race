@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { getCurrentUserId } from "@/core/application/current-user";
+import { getCurrentUser } from "@/core/application/current-user";
 import { createCardioSessionInputSchema } from "@/modules/cardio/domain";
 import { cardioSessionRepository } from "@/modules/cardio/infrastructure";
 import {
@@ -15,15 +15,15 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as unknown;
     const draft = parseRunImportDraft(body);
-    const saveIssue = getCardioImportDraftSaveIssue(draft);
+    const user = await getCurrentUser();
+    const saveIssue = getCardioImportDraftSaveIssue(draft, { timezone: user.timezone });
 
     if (saveIssue) {
       return NextResponse.json({ error: saveIssue }, { status: 400 });
     }
 
     const input = createCardioSessionInputSchema.parse(mapRunImportDraftToRunInput(draft));
-    const userId = await getCurrentUserId();
-    const session = await cardioSessionRepository.create(userId, input);
+    const session = await cardioSessionRepository.create(user.id, input);
 
     revalidatePath("/cardio");
     revalidatePath("/today");
