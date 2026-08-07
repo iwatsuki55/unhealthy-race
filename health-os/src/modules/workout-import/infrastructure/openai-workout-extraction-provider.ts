@@ -93,6 +93,8 @@ Extract only information visible in the screenshots. Never invent missing values
 Prioritize Apple Fitness, Apple Workout, running, walking, cycling, hiking, rowing, swimming, stair climber, elliptical, GPS workout summaries, and route screenshots.
 Classify activityType as one of: outdoor_run, treadmill_run, outdoor_walk, treadmill_walk, exercise_bike, outdoor_cycling, hiking, rowing, swimming, stair_climber, elliptical, other.
 Convert distance to integer meters, duration to total seconds, and pace to seconds per kilometer.
+For runDate, preserve the detected year explicitly and prefer ISO yyyy-mm-dd. Never infer a default year such as 2020.
+Do not use upload timestamps, file names, EXIF metadata, or source image ids as the workout date. Use only the visible workout date in the screenshot.
 If a value is not visible, use null with low confidence.
 If activity type is unclear, use other with low confidence.
 

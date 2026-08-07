@@ -5,13 +5,22 @@ import { ZodError } from "zod";
 import { getCurrentUserId } from "@/core/application/current-user";
 import { createCardioSessionInputSchema } from "@/modules/cardio/domain";
 import { cardioSessionRepository } from "@/modules/cardio/infrastructure";
-import { mapRunImportDraftToRunInput } from "@/modules/workout-import/application/run-draft-mapper";
+import {
+  getCardioImportDraftSaveIssue,
+  mapRunImportDraftToRunInput
+} from "@/modules/workout-import/application/run-draft-mapper";
 import { parseRunImportDraft } from "@/modules/workout-import/application/workout-extraction-schema";
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as unknown;
     const draft = parseRunImportDraft(body);
+    const saveIssue = getCardioImportDraftSaveIssue(draft);
+
+    if (saveIssue) {
+      return NextResponse.json({ error: saveIssue }, { status: 400 });
+    }
+
     const input = createCardioSessionInputSchema.parse(mapRunImportDraftToRunInput(draft));
     const userId = await getCurrentUserId();
     const session = await cardioSessionRepository.create(userId, input);

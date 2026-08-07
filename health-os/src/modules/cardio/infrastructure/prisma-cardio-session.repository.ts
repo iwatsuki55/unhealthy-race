@@ -7,7 +7,11 @@ import type {
   CreateCardioSessionInput,
   UpdateCardioSessionInput
 } from "@/modules/cardio/domain/cardio-session.schema";
-import { calculateAveragePaceSecondsPerKm, getCardioActivityConfig } from "@/modules/cardio/domain";
+import {
+  calculateAveragePaceSecondsPerKm,
+  dateOnlyStringToUtcDate,
+  getCardioActivityConfig
+} from "@/modules/cardio/domain";
 import { prisma } from "@/server/db/prisma";
 
 type PrismaCardioSession = Prisma.CardioSessionGetPayload<object>;
@@ -42,8 +46,8 @@ function toCardioSessionDto(session: PrismaCardioSession): CardioSessionDto {
   };
 }
 
-function toDateOnly(dateString: string) {
-  return new Date(`${dateString}T00:00:00.000+09:00`);
+function toDateOnly(dateString: string, timezone: string) {
+  return dateOnlyStringToUtcDate(dateString, timezone);
 }
 
 function toOptionalDate(dateTimeString: string | undefined) {
@@ -70,7 +74,8 @@ function calculatePaceOrNull(input: {
 
 function toCreateData(
   userId: EntityId,
-  input: CreateCardioSessionInput
+  input: CreateCardioSessionInput,
+  timezone: string
 ): Prisma.CardioSessionUncheckedCreateInput {
   const config = getCardioActivityConfig(input.activityType);
   const routeId = config.supportsRoute ? optionalToNullable(input.routeId) : null;
@@ -80,7 +85,7 @@ function toCreateData(
     userId,
     routeId,
     activityType: input.activityType,
-    runDate: toDateOnly(input.runDate),
+    runDate: toDateOnly(input.runDate, timezone),
     startedAt: toOptionalDate(input.startedAt),
     durationSeconds: input.durationSeconds,
     distanceMeters,
@@ -104,7 +109,10 @@ function toCreateData(
   };
 }
 
-function toUpdateData(input: UpdateCardioSessionInput): Prisma.CardioSessionUncheckedUpdateInput {
+function toUpdateData(
+  input: UpdateCardioSessionInput,
+  timezone: string
+): Prisma.CardioSessionUncheckedUpdateInput {
   const activityType = input.activityType ?? "outdoor_run";
   const config = getCardioActivityConfig(activityType);
   const nextDistance = config.supportsDistance ? input.distanceMeters : null;
@@ -115,7 +123,9 @@ function toUpdateData(input: UpdateCardioSessionInput): Prisma.CardioSessionUnch
     ...("routeId" in input
       ? { routeId: config.supportsRoute ? optionalToNullable(input.routeId) : null }
       : {}),
-    ...("runDate" in input && input.runDate ? { runDate: toDateOnly(input.runDate) } : {}),
+    ...("runDate" in input && input.runDate
+      ? { runDate: toDateOnly(input.runDate, timezone) }
+      : {}),
     ...("startedAt" in input ? { startedAt: toOptionalDate(input.startedAt) } : {}),
     ...("durationSeconds" in input ? { durationSeconds: input.durationSeconds } : {}),
     ...("distanceMeters" in input ? { distanceMeters: nextDistance } : {}),
@@ -183,8 +193,9 @@ export class PrismaCardioSessionRepository implements CardioSessionRepository {
   }
 
   async create(userId: EntityId, input: CreateCardioSessionInput): Promise<CardioSessionDto> {
+    const timezone = await this.getUserTimezone(userId);
     const session = await prisma.cardioSession.create({
-      data: toCreateData(userId, input)
+      data: toCreateData(userId, input, timezone)
     });
 
     return toCardioSessionDto(session);
@@ -196,6 +207,7 @@ export class PrismaCardioSessionRepository implements CardioSessionRepository {
     input: UpdateCardioSessionInput
   ): Promise<CardioSessionDto> {
     const existingSession = await this.ensureUserOwnsSession(userId, sessionId);
+    const timezone = await this.getUserTimezone(userId);
     const updateInput = {
       ...input,
       activityType: input.activityType ?? existingSession.activityType,
@@ -207,7 +219,7 @@ export class PrismaCardioSessionRepository implements CardioSessionRepository {
       where: {
         id: sessionId
       },
-      data: toUpdateData(updateInput)
+      data: toUpdateData(updateInput, timezone)
     });
 
     return toCardioSessionDto(session);
@@ -242,6 +254,19 @@ export class PrismaCardioSessionRepository implements CardioSessionRepository {
     }
 
     return session;
+  }
+
+  private async getUserTimezone(userId: EntityId) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        timezone: true
+      }
+    });
+
+    return user?.timezone ?? "Asia/Tokyo";
   }
 }
 
