@@ -66,6 +66,30 @@ test("parseRunImportDraft accepts a structured cardio draft", () => {
   assert.equal(draft.activityType.value, "outdoor_cycling");
 });
 
+test("parseRunImportDraft accepts natural activity labels from AI extraction", () => {
+  const draft = parseRunImportDraft({
+    title: field("Morning Run"),
+    activityType: field("running"),
+    runDate: field("2026-08-08"),
+    startTime: field("06:30"),
+    distanceMeters: field(5000),
+    durationSeconds: field(1800),
+    averagePaceSecondsPerKm: field(360),
+    averageHeartRate: field(142),
+    maximumHeartRate: field(168),
+    cadenceStepsPerMinute: field(172),
+    calories: field(310),
+    temperatureCelsius: field(null, "low"),
+    humidityPercent: field(null, "low"),
+    shoes: field(null, "low"),
+    perceivedEffort: field(null, "low"),
+    notes: field("Extracted from screenshots", "medium"),
+    sourceApplication: field("Apple Fitness")
+  });
+
+  assert.equal(draft.activityType.value, "running");
+});
+
 test("parseWorkoutImportDraft rejects malformed extraction responses", () => {
   assert.throws(() =>
     parseWorkoutImportDraft({

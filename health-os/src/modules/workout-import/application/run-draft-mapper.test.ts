@@ -171,6 +171,35 @@ test("mapRunImportDraftToRunInput preserves supported cardio activity type", () 
   assert.equal(input.activityType, "outdoor_cycling");
 });
 
+test("mapRunImportDraftToRunInput normalizes natural cardio activity labels", () => {
+  assert.equal(
+    mapRunImportDraftToRunInput(
+      draft({
+        activityType: field("running")
+      })
+    ).activityType,
+    "outdoor_run"
+  );
+
+  assert.equal(
+    mapRunImportDraftToRunInput(
+      draft({
+        activityType: field("Outdoor Cycling")
+      })
+    ).activityType,
+    "outdoor_cycling"
+  );
+
+  assert.equal(
+    mapRunImportDraftToRunInput(
+      draft({
+        activityType: field("Indoor Bike")
+      })
+    ).activityType,
+    "exercise_bike"
+  );
+});
+
 test("mapRunImportDraftToRunInput leaves missing required values for schema validation", () => {
   const input = mapRunImportDraftToRunInput(
     draft({

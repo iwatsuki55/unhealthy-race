@@ -187,10 +187,52 @@ function rating(value: number | null) {
     : undefined;
 }
 
+const cardioActivityAliases: Record<string, CardioActivityType> = {
+  bike: "outdoor_cycling",
+  biking: "outdoor_cycling",
+  cycle: "outdoor_cycling",
+  cycling: "outdoor_cycling",
+  elliptical_trainer: "elliptical",
+  indoor_bike: "exercise_bike",
+  indoor_cycle: "exercise_bike",
+  indoor_cycling: "exercise_bike",
+  indoor_run: "treadmill_run",
+  indoor_running: "treadmill_run",
+  indoor_walk: "treadmill_walk",
+  indoor_walking: "treadmill_walk",
+  outdoor_bike: "outdoor_cycling",
+  outdoor_cycle: "outdoor_cycling",
+  outdoor_running: "outdoor_run",
+  outdoor_walking: "outdoor_walk",
+  run: "outdoor_run",
+  running: "outdoor_run",
+  stair_climbing: "stair_climber",
+  stairs: "stair_climber",
+  treadmill: "treadmill_run",
+  treadmill_running: "treadmill_run",
+  treadmill_walking: "treadmill_walk",
+  walk: "outdoor_walk",
+  walking: "outdoor_walk"
+};
+
+function normalizeActivityTypeValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
 function activityType(value: string | null): CardioActivityType {
-  return cardioActivityTypeValues.includes(value as CardioActivityType)
-    ? (value as CardioActivityType)
-    : "outdoor_run";
+  const normalized = value ? normalizeActivityTypeValue(value) : "";
+
+  if (cardioActivityTypeValues.includes(normalized as CardioActivityType)) {
+    return normalized as CardioActivityType;
+  }
+
+  return cardioActivityAliases[normalized] ?? "outdoor_run";
 }
 
 export function mapRunImportDraftToRunInput(
