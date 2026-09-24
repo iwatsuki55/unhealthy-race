@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getSupportedWorkoutImageMimeType } from "@/modules/workout-import/application/workout-image-format";
 import {
   extractRunDraftWithOpenAI,
   WorkoutExtractionProviderError
@@ -9,12 +10,16 @@ const maxImages = 10;
 const maxImageBytes = 8 * 1024 * 1024;
 
 function isSupportedImage(file: File) {
-  return file.type.startsWith("image/") || /\.(heic|heif|jpe?g|png|webp)$/i.test(file.name);
+  return Boolean(getSupportedWorkoutImageMimeType(file));
 }
 
 async function fileToDataUrl(file: File) {
   const buffer = Buffer.from(await file.arrayBuffer());
-  const mimeType = file.type || "image/png";
+  const mimeType = getSupportedWorkoutImageMimeType(file);
+
+  if (!mimeType) {
+    throw new Error("UNSUPPORTED_WORKOUT_IMAGE");
+  }
 
   return `data:${mimeType};base64,${buffer.toString("base64")}`;
 }
@@ -43,7 +48,10 @@ export async function POST(request: Request) {
 
     if (invalidFile) {
       return NextResponse.json(
-        { error: "One screenshot could not be analyzed. Use an image under 8 MB." },
+        {
+          error:
+            "One screenshot could not be analyzed. Use a PNG, JPEG, WEBP, or GIF image under 8 MB."
+        },
         { status: 400 }
       );
     }
@@ -52,7 +60,7 @@ export async function POST(request: Request) {
       files.map(async (file, index) => ({
         id: formData.get(`imageId:${index}`)?.toString() ?? `image-${index + 1}`,
         fileName: file.name,
-        mimeType: file.type || "image/png",
+        mimeType: getSupportedWorkoutImageMimeType(file) ?? "image/jpeg",
         dataUrl: await fileToDataUrl(file),
         order: index + 1
       }))

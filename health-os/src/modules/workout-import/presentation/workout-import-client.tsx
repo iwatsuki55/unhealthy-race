@@ -15,6 +15,7 @@ import {
   removeImportedImage,
   reorderImportedImages
 } from "@/modules/workout-import/application";
+import { isHeicWorkoutImage } from "@/modules/workout-import/application/workout-image-format";
 import type {
   ImportedImage,
   RunImportDraft,
@@ -25,7 +26,8 @@ import type {
 const maxImages = 10;
 const storageKey = "health-os.workout-import.stage-3";
 const staleStorageKeys = ["health-os.workout-import.stage-1", "health-os.workout-import.stage-2"];
-const acceptedImageTypes = "image/*";
+const acceptedImageTypes =
+  "image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif,.heic,.heif";
 type ImportType = "strength" | "cardio";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
@@ -49,6 +51,55 @@ function createBrowserSession(): WorkoutImportSession {
     now: new Date(),
     userId: "browser-stage-1-user"
   });
+}
+
+async function convertHeicToJpeg(file: File) {
+  if (!isHeicWorkoutImage(file)) {
+    return file;
+  }
+
+  const sourceUrl = URL.createObjectURL(file);
+
+  try {
+    const image = document.createElement("img");
+    image.decoding = "async";
+    image.src = sourceUrl;
+    await image.decode();
+
+    const maxDimension = 3000;
+    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Image conversion is unavailable in this browser.");
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (value) =>
+          value
+            ? resolve(value)
+            : reject(new Error("The selected HEIC image could not be converted.")),
+        "image/jpeg",
+        0.94
+      );
+    });
+    const jpegName = file.name.replace(/\.(heic|heif)$/i, "") || "workout-screenshot";
+
+    return new File([blob], `${jpegName}.jpg`, {
+      type: "image/jpeg",
+      lastModified: file.lastModified
+    });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
 }
 
 function toStoredSession(session: WorkoutImportSession): StoredImportSession {
@@ -438,12 +489,15 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
   const canAnalyze = session.images.length > 0 && session.status !== "analyzing";
   const orderedImageIds = useMemo(() => session.images.map((image) => image.id), [session.images]);
 
-  function handleFiles(files: FileList | File[], source: "picker" | "paste" | "drop" = "picker") {
-    const imageFiles = Array.from(files)
+  async function handleFiles(
+    files: FileList | File[],
+    source: "picker" | "paste" | "drop" = "picker"
+  ) {
+    const selectedFiles = Array.from(files)
       .filter((file) => file.type.startsWith("image/") || /\.(heic|heif)$/i.test(file.name))
       .slice(0, Math.max(remainingSlots, 0));
 
-    if (imageFiles.length === 0) {
+    if (selectedFiles.length === 0) {
       if (source === "paste") {
         setPasteMessage("No image was found in the pasted content.");
       }
@@ -451,11 +505,25 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
     }
 
     setUploadProgress(10);
+    setAnalysisError(null);
+
+    let imageFiles: File[];
+
+    try {
+      imageFiles = await Promise.all(selectedFiles.map(convertHeicToJpeg));
+    } catch {
+      setUploadProgress(0);
+      setAnalysisError(
+        "This iPhone photo could not be prepared for analysis. In Photos, take a screenshot of the image and select that screenshot instead."
+      );
+      return;
+    }
+
     const images = imageFiles.map((file) => ({
       file,
       id: crypto.randomUUID(),
       name: file.name,
-      type: file.type || "image/heic",
+      type: file.type,
       size: file.size,
       lastModified: file.lastModified,
       previewUrl: URL.createObjectURL(file)
@@ -674,7 +742,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
               type="file"
               onChange={(event) => {
                 if (event.currentTarget.files) {
-                  handleFiles(event.currentTarget.files);
+                  void handleFiles(event.currentTarget.files);
                   event.currentTarget.value = "";
                 }
               }}

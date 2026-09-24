@@ -30,6 +30,8 @@ interface OpenAIResponse {
   }>;
 }
 
+type JsonSchema = Record<string, unknown>;
+
 export class WorkoutExtractionProviderError extends Error {
   constructor(
     message: string,
@@ -130,6 +132,73 @@ field<T> is:
 
 Use the provided source image ids exactly. Return only a JSON object. Do not wrap it in markdown.`;
 
+function importFieldJsonSchema(valueSchema: JsonSchema): JsonSchema {
+  return {
+    type: "object",
+    properties: {
+      value: {
+        anyOf: [valueSchema, { type: "null" }]
+      },
+      confidence: {
+        type: "string",
+        enum: ["high", "medium", "low"]
+      },
+      sourceImageIds: {
+        type: "array",
+        items: { type: "string" }
+      }
+    },
+    required: ["value", "confidence", "sourceImageIds"],
+    additionalProperties: false
+  };
+}
+
+const stringImportFieldJsonSchema = importFieldJsonSchema({ type: "string" });
+const numberImportFieldJsonSchema = importFieldJsonSchema({ type: "number" });
+
+const runExtractionJsonSchema: JsonSchema = {
+  type: "object",
+  properties: {
+    title: stringImportFieldJsonSchema,
+    activityType: stringImportFieldJsonSchema,
+    runDate: stringImportFieldJsonSchema,
+    startTime: stringImportFieldJsonSchema,
+    distanceMeters: numberImportFieldJsonSchema,
+    durationSeconds: numberImportFieldJsonSchema,
+    averagePaceSecondsPerKm: numberImportFieldJsonSchema,
+    averageHeartRate: numberImportFieldJsonSchema,
+    maximumHeartRate: numberImportFieldJsonSchema,
+    cadenceStepsPerMinute: numberImportFieldJsonSchema,
+    calories: numberImportFieldJsonSchema,
+    temperatureCelsius: numberImportFieldJsonSchema,
+    humidityPercent: numberImportFieldJsonSchema,
+    shoes: stringImportFieldJsonSchema,
+    perceivedEffort: numberImportFieldJsonSchema,
+    notes: stringImportFieldJsonSchema,
+    sourceApplication: stringImportFieldJsonSchema
+  },
+  required: [
+    "title",
+    "activityType",
+    "runDate",
+    "startTime",
+    "distanceMeters",
+    "durationSeconds",
+    "averagePaceSecondsPerKm",
+    "averageHeartRate",
+    "maximumHeartRate",
+    "cadenceStepsPerMinute",
+    "calories",
+    "temperatureCelsius",
+    "humidityPercent",
+    "shoes",
+    "perceivedEffort",
+    "notes",
+    "sourceApplication"
+  ],
+  additionalProperties: false
+};
+
 function extractResponseText(response: OpenAIResponse) {
   if (response.output_text) {
     return response.output_text;
@@ -155,7 +224,11 @@ function extractJson(text: string) {
   return trimmed;
 }
 
-async function requestExtraction(images: ImageInput[], extractionPrompt: string) {
+async function requestExtraction(
+  images: ImageInput[],
+  extractionPrompt: string,
+  outputSchema?: { name: string; schema: JsonSchema }
+) {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -196,9 +269,16 @@ async function requestExtraction(images: ImageInput[], extractionPrompt: string)
       ],
       max_output_tokens: 12000,
       text: {
-        format: {
-          type: "json_object"
-        }
+        format: outputSchema
+          ? {
+              type: "json_schema",
+              name: outputSchema.name,
+              strict: true,
+              schema: outputSchema.schema
+            }
+          : {
+              type: "json_object"
+            }
       }
     })
   });
@@ -252,5 +332,17 @@ export async function extractWorkoutDraftWithOpenAI(
 }
 
 export async function extractRunDraftWithOpenAI(images: ImageInput[]): Promise<RunImportDraft> {
-  return parseRunImportDraft(await requestExtraction(images, runPrompt));
+  const extraction = await requestExtraction(images, runPrompt, {
+    name: "cardio_workout_import",
+    schema: runExtractionJsonSchema
+  });
+
+  try {
+    return parseRunImportDraft(extraction);
+  } catch {
+    throw new WorkoutExtractionProviderError(
+      "OpenAI cardio extraction did not match the expected shape.",
+      "openai_invalid_cardio_extraction_shape"
+    );
+  }
 }
