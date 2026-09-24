@@ -8,6 +8,7 @@ import {
 
 const maxImages = 10;
 const maxImageBytes = 8 * 1024 * 1024;
+const maxTotalImageBytes = 4 * 1024 * 1024;
 
 function isSupportedImage(file: File) {
   return Boolean(getSupportedWorkoutImageMimeType(file));
@@ -53,6 +54,16 @@ export async function POST(request: Request) {
             "One screenshot could not be analyzed. Use a PNG, JPEG, WEBP, or GIF image under 8 MB."
         },
         { status: 400 }
+      );
+    }
+
+    if (totalBytes > maxTotalImageBytes) {
+      return NextResponse.json(
+        {
+          error:
+            "The selected screenshots are too large to upload together. Remove them, select them again, and retry."
+        },
+        { status: 413 }
       );
     }
 

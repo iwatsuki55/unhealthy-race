@@ -28,6 +28,7 @@ const storageKey = "health-os.workout-import.stage-3";
 const staleStorageKeys = ["health-os.workout-import.stage-1", "health-os.workout-import.stage-2"];
 const acceptedImageTypes =
   "image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif,.heic,.heif";
+const maxAnalysisImageBytes = 380 * 1024;
 type ImportType = "strength" | "cardio";
 
 interface StoredImportSession extends Omit<WorkoutImportSession, "images"> {
@@ -53,8 +54,21 @@ function createBrowserSession(): WorkoutImportSession {
   });
 }
 
-async function convertHeicToJpeg(file: File) {
-  if (!isHeicWorkoutImage(file)) {
+async function canvasToJpeg(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (value) =>
+        value
+          ? resolve(value)
+          : reject(new Error("The selected image could not be prepared for analysis.")),
+      "image/jpeg",
+      quality
+    );
+  });
+}
+
+async function optimizeImageForAnalysis(file: File) {
+  if (!isHeicWorkoutImage(file) && file.size <= maxAnalysisImageBytes) {
     return file;
   }
 
@@ -66,32 +80,42 @@ async function convertHeicToJpeg(file: File) {
     image.src = sourceUrl;
     await image.decode();
 
-    const maxDimension = 3000;
-    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-    const width = Math.max(1, Math.round(image.naturalWidth * scale));
-    const height = Math.max(1, Math.round(image.naturalHeight * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    let maxDimension = 2200;
+    let quality = 0.88;
+    let blob: Blob | null = null;
 
-    const context = canvas.getContext("2d");
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
 
-    if (!context) {
-      throw new Error("Image conversion is unavailable in this browser.");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        throw new Error("Image conversion is unavailable in this browser.");
+      }
+
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+      blob = await canvasToJpeg(canvas, quality);
+
+      if (blob.size <= maxAnalysisImageBytes) {
+        break;
+      }
+
+      maxDimension = Math.round(maxDimension * 0.82);
+      quality = Math.max(0.58, quality - 0.07);
     }
 
-    context.drawImage(image, 0, 0, width, height);
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (value) =>
-          value
-            ? resolve(value)
-            : reject(new Error("The selected HEIC image could not be converted.")),
-        "image/jpeg",
-        0.94
-      );
-    });
-    const jpegName = file.name.replace(/\.(heic|heif)$/i, "") || "workout-screenshot";
+    if (!blob) {
+      throw new Error("The selected image could not be prepared for analysis.");
+    }
+
+    const jpegName = file.name.replace(/\.[^.]+$/i, "") || "workout-screenshot";
 
     return new File([blob], `${jpegName}.jpg`, {
       type: "image/jpeg",
@@ -510,7 +534,7 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
     let imageFiles: File[];
 
     try {
-      imageFiles = await Promise.all(selectedFiles.map(convertHeicToJpeg));
+      imageFiles = await Promise.all(selectedFiles.map(optimizeImageForAnalysis));
     } catch {
       setUploadProgress(0);
       setAnalysisError(
@@ -637,19 +661,24 @@ export function WorkoutImportClient({ importType = "strength" }: { importType?: 
     });
 
     try {
-      const response = await fetch(
+      const endpoint =
         importType === "cardio"
           ? "/api/workout-import/analyze-cardio"
-          : "/api/workout-import/analyze",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
-      const payload = (await response.json()) as AnalyzeResponse;
+          : "/api/workout-import/analyze";
+      const response = await fetch(new URL(endpoint, window.location.origin).href, {
+        method: "POST",
+        body: formData
+      });
+      const isJson = response.headers.get("content-type")?.includes("application/json");
+      const payload = isJson ? ((await response.json()) as AnalyzeResponse) : {};
 
       if (!response.ok || !payload.draft) {
-        throw new Error(payload.error ?? "Health OS could not analyze these screenshots.");
+        throw new Error(
+          payload.error ??
+            (response.status === 413
+              ? "The selected screenshots are too large to upload. Remove them, select them again, and retry."
+              : "Health OS could not analyze these screenshots. Please try again.")
+        );
       }
       const draft = payload.draft;
 
